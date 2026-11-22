@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ผู้ใช้ต้องล็อกอินด้วย Google และมีชื่ออยู่ในคอลเลกชัน members (ชื่อเอกสาร = อีเมลตัวพิมพ์เล็ก)
+    function signedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    function myEmail() { return request.auth.token.email.lower(); }
+    function isMember() { return signedIn() && exists(/databases/$(database)/documents/members/$(myEmail())); }
+    function myRole() { return get(/databases/$(database)/documents/members/$(myEmail())).data.role; }
+    function canEdit() { return isMember() && myRole() in ['admin', 'editor']; }
+    function isAdmin() { return isMember() && myRole() == 'admin'; }
+
+    // รายชื่อผู้ใช้: อ่านสิทธิ์ของตัวเองได้ · ผู้ดูแลระบบอ่าน/แก้ได้ทั้งหมด
+    match /members/{email} {
+      allow get: if signedIn() && (myEmail() == email || isAdmin());
+      allow list: if isAdmin();
+      allow write: if isAdmin();
+    }
+    // ข้อมูลระบบ: สมาชิกทุกคนอ่านได้ · ผู้แก้ไข/ผู้ดูแลระบบเขียนได้
+    match /uploads/{id}  { allow read: if isMember(); allow write: if canEdit(); }
+    match /rows/{id}     { allow read: if isMember(); allow write: if canEdit(); }
+    match /nh/{id}       { allow read: if isMember(); allow write: if canEdit(); }
+    match /settings/{id} { allow read: if isMember(); allow write: if canEdit(); }
+    match /audit/{id}    { allow read: if isMember(); allow create: if canEdit(); allow update, delete: if false; }
+  }
+}

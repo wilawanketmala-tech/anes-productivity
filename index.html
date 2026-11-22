@@ -1,0 +1,1155 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Productivity กลุ่มงานวิสัญญี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: navy header band with period controls -> tab strip -> one working view at a time (summary first, detail tables below) */
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --sunk:#EBEFF5; --ink:#132033; --muted:#5B6B80; --line:#D9E0EA;
+  --accent:#103A63; --accent-2:#0B6E7F; --accent-ink:#FFFFFF; --accent-soft:#E1EBF6;
+  --intime:#103A63; --f3:#21A05A; --f4:#2B6FE0; --f5:#EC6F23; --f6:#D99A00; --out:#8A4FD6; --tot:#132033;
+  --hero-a:#0E3358; --hero-b:#0A6377;
+  --good:#23814F; --good-bg:#E1F2E8; --warn:#B26A00; --warn-bg:#FBEFD9; --bad:#B8362A; --bad-bg:#F8E1DE; --wait:#5B6B80; --wait-bg:#E9EDF2;
+  --band:rgba(35,129,79,.10);
+  --font-ui:"IBM Plex Sans Thai",system-ui,"Leelawadee UI","Tahoma",sans-serif;
+  --font-head:"Anuphan","IBM Plex Sans Thai",system-ui,sans-serif;
+  --font-num:"IBM Plex Mono",ui-monospace,"Consolas",monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E141C; --surface:#151E29; --sunk:#1B2633; --ink:#E5ECF4; --muted:#93A3B7; --line:#283545;
+  --accent:#123B60; --accent-2:#0E6A7A; --accent-ink:#EAF2FB; --accent-soft:#1C2F45;
+  --intime:#8DB8E6; --f3:#4FD18A; --f4:#6EA2FF; --f5:#FF9A55; --f6:#F5C33B; --out:#B78BFF; --tot:#E5ECF4;
+  --hero-a:#0F2F52; --hero-b:#0B5566;
+  --good:#5CC98C; --good-bg:#16301F; --warn:#F0AE4A; --warn-bg:#352711; --bad:#F07C6F; --bad-bg:#3A1B17; --wait:#93A3B7; --wait-bg:#1F2935;
+  --band:rgba(92,201,140,.12); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E141C; --surface:#151E29; --sunk:#1B2633; --ink:#E5ECF4; --muted:#93A3B7; --line:#283545;
+  --accent:#123B60; --accent-2:#0E6A7A; --accent-ink:#EAF2FB; --accent-soft:#1C2F45;
+  --intime:#8DB8E6; --f3:#4FD18A; --f4:#6EA2FF; --f5:#FF9A55; --f6:#F5C33B; --out:#B78BFF; --tot:#E5ECF4;
+  --hero-a:#0F2F52; --hero-b:#0B5566;
+  --good:#5CC98C; --good-bg:#16301F; --warn:#F0AE4A; --warn-bg:#352711; --bad:#F07C6F; --bad-bg:#3A1B17; --wait:#93A3B7; --wait-bg:#1F2935;
+  --band:rgba(92,201,140,.12); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:14px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--accent)}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1240px;margin:0 auto}
+h1,h2,h3{font-family:var(--font-head);text-wrap:balance;margin:0}
+.num,td.n,th.n{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--f4);outline-offset:2px}
+
+/* header */
+header.top{background:var(--accent);color:var(--accent-ink);position:relative}
+header.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,var(--f3) 0 25%,var(--f4) 25% 50%,var(--f5) 50% 75%,var(--f6) 75% 100%)}
+header.top .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;padding-block:18px 14px}
+.brand small{display:block;opacity:.78;font-size:12.5px;letter-spacing:.02em}
+.brand h1{font-size:21px;font-weight:700;letter-spacing:.01em}
+.period{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.period label{font-size:12px;opacity:.8}
+.period select{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:6px 10px;color:var(--accent-ink)}
+.period select option{color:#132033;background:#fff}
+.seg{display:inline-flex;border:1px solid rgba(255,255,255,.3);border-radius:8px;overflow:hidden}
+.seg button{background:transparent;border:0;padding:6px 12px;cursor:pointer;color:var(--accent-ink);opacity:.8}
+.seg button[aria-pressed="true"]{background:rgba(255,255,255,.2);opacity:1;font-weight:600}
+nav.tabs{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+nav.tabs .wrap{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav.tabs a{padding:11px 14px;color:var(--muted);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent;font-weight:500}
+nav.tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+:root[data-theme="dark"] nav.tabs a[aria-current="page"]{border-bottom-color:var(--f4)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav.tabs a[aria-current="page"]{border-bottom-color:var(--f4)}}
+main .wrap{padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
+
+/* blocks */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0}
+.panel h2{font-size:16px;font-weight:600;margin-bottom:4px}
+.panel .sub{color:var(--muted);font-size:12.5px;margin:0 0 12px}
+.row{display:flex;flex-wrap:wrap;gap:16px}
+.row>*{flex:1 1 260px;min-width:0}
+.status{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;color:var(--muted);font-size:13px}
+.status b{color:var(--ink);font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.chip.good{color:var(--good);background:var(--good-bg);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--good) 25%,transparent)} .chip.warn{color:var(--warn);background:var(--warn-bg);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 25%,transparent)}
+.chip.bad{color:var(--bad);background:var(--bad-bg);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bad) 25%,transparent)} .chip.wait{color:var(--wait);background:var(--wait-bg)}
+
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:820px){.kpis{grid-template-columns:1fr}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:6px;border-top:4px solid var(--c,var(--accent))}
+.kpi .lbl{font-size:13px;color:var(--muted);font-weight:500}
+.kpi .big{font-family:var(--font-num);font-size:34px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi .big small{font-size:16px;color:var(--muted)}
+.kpi .meta{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}
+.kpi .meta span b{color:var(--ink);font-family:var(--font-num);font-weight:500}
+
+.floors{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:980px){.floors{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:460px){.floors{grid-template-columns:1fr}}
+.fl{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.fl .h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fl .name{font-weight:600;display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:3px;background:var(--c);display:inline-block;flex:none}
+.fl .v{font-family:var(--font-num);font-size:24px;font-variant-numeric:tabular-nums}
+.fl .m{font-size:12px;color:var(--muted)}
+.gauge{position:relative;height:8px;border-radius:4px;background:var(--sunk);overflow:hidden}
+.gauge .band{position:absolute;top:0;bottom:0;background:var(--band);border-left:1px dashed var(--good);border-right:1px dashed var(--good)}
+.gauge .bar{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--c)}
+
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{background:var(--sunk);font-weight:600;font-size:12.5px;vertical-align:bottom}
+td.n,th.n{text-align:right}
+tr:last-child td{border-bottom:0}
+tr.em td{font-weight:600;background:var(--accent-soft)}
+th .dot{margin-right:6px}
+td.lbl{color:var(--ink);font-weight:500}
+td.dim,span.dim{color:var(--muted)}
+.col-sum{background:color-mix(in srgb,var(--accent-soft) 55%,transparent)}
+.heat td.n{font-weight:500}
+
+h2.sec{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.03em;margin:4px 0 -8px}
+.tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+@media (max-width:1100px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:560px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile .lbl{font-size:12.5px;color:var(--muted);font-weight:500}
+.tile .v{font-family:var(--font-num);font-size:22px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tile .v small{font-size:12px;color:var(--muted);font-family:var(--font-ui)}
+details summary{cursor:pointer;font-size:12px;color:var(--f4)} details p{font-size:12px;color:var(--muted);margin:6px 0 0}
+.h3{font-size:14px;font-weight:600;margin:16px 0 8px}
+.toggle{display:inline-flex;gap:8px;align-items:center;font-size:13px}
+.banner{background:var(--warn-bg);color:var(--ink);font-size:12.5px;text-align:center;padding:6px 16px;border-bottom:1px solid var(--line)}
+/* overview: one headline, five equal group cards */
+.hero{border-radius:16px;padding:24px 26px;display:flex;flex-wrap:wrap;gap:18px 32px;align-items:center;justify-content:space-between;background:linear-gradient(120deg,var(--hero-a),var(--hero-b));color:#fff;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;right:-80px;top:-80px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.10),transparent 70%)}
+.hero>*{position:relative}
+.hero-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+.hero-k{font-size:13.5px;opacity:.85}
+.hero-v{font-family:var(--font-num);font-size:64px;line-height:1;font-variant-numeric:tabular-nums;font-weight:500;letter-spacing:-.01em}
+.hero-v small{font-size:22px;opacity:.75}
+.hero-s{display:flex;gap:10px;align-items:center;font-size:12.5px;opacity:.95}
+.hero-f{display:flex;flex-wrap:wrap;gap:4px 20px;font-size:13.5px;opacity:.9;margin-top:6px}
+.hero-f b{font-family:var(--font-num);font-weight:500}
+.hero-side{display:flex;flex-direction:column;align-items:center;gap:6px}
+.hero-cap{font-size:11.5px;opacity:.7}
+.hero .chip{background:#fff}
+.hero .chip.good{color:#15803D}.hero .chip.bad{color:#C0262D}.hero .chip.warn{color:#B45309}.hero .chip.wait{color:#475569}
+.dial text{fill:#fff;font-family:var(--font-num)} .dial .lab{fill:rgba(255,255,255,.7);font-family:var(--font-ui);font-size:10px}
+.say{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--sc,var(--accent));border-radius:10px;padding:10px 14px}
+.say{margin:0;color:var(--ink);font-size:14px;line-height:1.6}
+.gcards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+@media (max-width:1000px){.gcards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:560px){.gcards{grid-template-columns:repeat(2,minmax(0,1fr))}.gcard:last-child{grid-column:span 2}.hero-v{font-size:44px}.hero-side{align-items:flex-start}}
+.gcard{background:linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--surface)),var(--surface) 70%);border:1px solid color-mix(in srgb,var(--c) 30%,var(--line));border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;border-top:5px solid var(--c);min-width:0;transition:transform .15s ease,box-shadow .15s ease}
+.gcard:hover{transform:translateY(-2px);box-shadow:0 8px 22px color-mix(in srgb,var(--c) 22%,transparent)}
+@media (prefers-reduced-motion:reduce){.gcard{transition:none}.gcard:hover{transform:none}}
+.gcard .gauge{height:10px;background:color-mix(in srgb,var(--c) 12%,var(--sunk))}
+.gh{font-weight:600;display:flex;align-items:center;gap:6px;font-size:13.5px}
+.gh .dot{background:var(--c);width:12px;height:12px;border-radius:4px}
+.gv{font-family:var(--font-num);font-size:32px;line-height:1.1;font-variant-numeric:tabular-nums;font-weight:500}
+.gv small{font-size:14px;color:var(--muted)}
+.gcard .chip{align-self:flex-start}
+.gm{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.status.foot{border-top:1px solid var(--line);padding-top:12px}
+.tsep{width:1px;background:var(--line);margin:8px 6px;flex:none}
+/* sign-in + user box */
+.who{display:flex;align-items:center;gap:8px;font-size:12px;opacity:.95;flex-wrap:wrap}
+.btn.small{padding:4px 10px;font-size:12px;background:transparent;color:var(--accent-ink);border-color:rgba(255,255,255,.4)}
+.gate{max-width:520px;margin:40px auto;display:flex;flex-direction:column;gap:12px;align-items:center}
+/* forms & buttons */
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:500}
+.btn:hover{background:var(--sunk)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.12)}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input.cell{width:92px;text-align:right;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-family:var(--font-num)}
+input.cell.dirty{border-color:var(--warn);background:var(--warn-bg)}
+input.txt,input[type=date]{padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:28px 18px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;background:var(--sunk);cursor:pointer}
+.drop.over{border-color:var(--f4);background:var(--accent-soft)}
+.drop strong{font-size:15px}
+.note{font-size:12.5px;color:var(--muted)}
+.callout{border-radius:8px;padding:10px 14px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.callout.warn{background:var(--warn-bg);color:var(--ink)} .callout.good{background:var(--good-bg)} .callout.bad{background:var(--bad-bg)}
+.callout.info{background:var(--accent-soft)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:13px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:14px;height:3px;border-radius:2px;background:var(--c)}
+svg text{fill:var(--muted);font-family:var(--font-ui);font-size:11px}
+.rules li{margin-bottom:6px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:13px;z-index:20}
+@media (prefers-reduced-motion:no-preference){.gauge .bar{transition:width .4s ease}}
+</style>
+
+<style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <small>กลุ่มงานการพยาบาลวิสัญญี · โรงพยาบาลมหาสารคาม</small>
+      <h1>Productivity วิสัญญี ชั้น 3–6</h1>
+    </div>
+    <div class="period" aria-label="ช่วงข้อมูล">
+      <label for="selFy">ปีงบ</label><select id="selFy"></select>
+      <label for="selMonth">เดือน</label><select id="selMonth"></select>
+      <div class="seg" role="group" aria-label="โหมด">
+        <button id="modeMonth" aria-pressed="true">รายเดือน</button>
+        <button id="modeYtd" aria-pressed="false">สะสม YTD</button>
+      </div>
+      <div class="who" id="who" hidden></div>
+    </div>
+  </div>
+</header>
+<nav class="tabs" aria-label="เมนู"><div class="wrap" id="tabs">
+  <a href="#overview">ภาพรวม</a><a href="#detail">รายละเอียด</a><a href="#annual">รายปี</a><a href="#asa">ASA</a>
+  <a href="#staffing">กำลังคน</a><a href="#report">รายงานตรวจสอบ</a><span class="tsep" aria-hidden="true"></span><a href="#upload">นำเข้าข้อมูล</a><a href="#hours">Nursing Hours</a><a href="#holidays">วันหยุด</a><a href="#rules">กติกา</a><a href="#members" id="tabMembers" hidden>ผู้ใช้งาน</a>
+</div></nav>
+<main><div class="wrap" id="view"><div class="panel empty">กำลังโหลดข้อมูลกลุ่มงาน…</div></div></main>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+/* Productivity / ASA / FTE engine — กลุ่มงานวิสัญญี (ปีงบ 2570)
+   v3.1: Workload FTE = WW ÷ 140 · ห้องนอก OR → ชั้น 4 · ASA ว่าง → ASA 1 (ในเวลา) / 1E (นอกเวลา) · เวรดึกถึง 08:29 = วันก่อน · เลขแถวต้นทาง · Coverage */
+const Engine = (() => {
+  const WEIGHTS = [0, 2.58, 4.75, 7.08, 9.25];
+  const PREOP = 30, IN_FROM = 8 * 60 + 30, IN_TO = 16 * 60 + 30, FTE_MONTH = 140, FTE_YEAR = 1680;
+  const FLOORS = ['F3', 'F4', 'F5', 'F6'];
+  const GROUPS = ['F3', 'F4', 'F5', 'F6', 'INTIME', 'OUT', 'TOTAL'];
+  const ASA = ['ASA 1', 'ASA 2', 'ASA 3', 'ASA 4', 'ASA 5', 'ASA 6', 'ASA 1E', 'ASA 2E', 'ASA 3E', 'ASA 4E', 'ASA 5E', 'ASA 6E'];
+  const MISSING = 'Missing ASA', OTHER_ASA = 'ASA รูปแบบอื่น';
+  const MONTHS = ['ต.ค.', 'พ.ย.', 'ธ.ค.', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.'];
+  const MONTHS_FULL = ['ตุลาคม', 'พฤศจิกายน', 'ธันวาคม', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน'];
+  const NEED = ['room_name', 'date1', 'time1', 'ane_tm', 'month', 'year', 'asa', 'pacu_tm'];
+
+  function fixThai(s) {
+    if (typeof s !== 'string') return s;
+    if (/[฀-๿]/.test(s) || !/[¡-û]/.test(s)) return s;
+    let o = '';
+    for (const ch of s) { const c = ch.charCodeAt(0); o += (c >= 0xA1 && c <= 0xFB) ? String.fromCharCode(0x0E00 + c - 0xA0) : ch; }
+    return o;
+  }
+  const pad = (n) => String(n).padStart(2, '0');
+  function serialToYmd(n) { const d = new Date(Date.UTC(1899, 11, 30) + Math.floor(n) * 864e5); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; }
+  function toYmd(v) {
+    if (v == null || v === '') return null;
+    if (typeof v === 'number') return serialToYmd(v);
+    if (v instanceof Date) return `${v.getFullYear()}-${pad(v.getMonth() + 1)}-${pad(v.getDate())}`;
+    const s = String(v).trim(); let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m) { let y = +m[1]; if (y > 2400) y -= 543; return `${y}-${pad(m[2])}-${pad(m[3])}`; }
+    m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) { let y = +m[3]; if (y > 2400) y -= 543; return `${y}-${pad(m[2])}-${pad(m[1])}`; }
+    return null;
+  }
+  function toMin(v) {
+    if (v == null || v === '') return null;
+    if (typeof v === 'number') return Math.round((v % 1) * 1440) % 1440;
+    if (v instanceof Date) return v.getHours() * 60 + v.getMinutes();
+    const m = String(v).trim().match(/^(\d{1,2})[:.](\d{2})/); if (!m) return null;
+    const h = +m[1], mi = +m[2]; return (h < 24 && mi < 60) ? h * 60 + mi : null;
+  }
+  const num = (v) => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '').trim()); return isFinite(n) ? n : 0; };
+  /* ane_tm: null = ว่าง, -1 = ไม่ใช่ตัวเลข, otherwise minutes */
+  function aneOf(v) {
+    if (v == null || String(v).trim() === '') return null;
+    const n = typeof v === 'number' ? v : Number(String(v).trim());
+    return isFinite(n) ? n : -1;
+  }
+  function normAsa(v) { const s = String(v ?? '').toUpperCase().replace(/\s+/g, ''); if (!s) return ''; return s.startsWith('ASA') ? 'ASA ' + s.slice(3, 8) : s; }
+  function floorOf(room) {
+    const r = String(room ?? '').trim(); if (!r) return 'X';
+    if (r.includes('สลายนิ่ว')) return 'F5';
+    if (!(r.includes('ห้องผ่าตัด') || r.toUpperCase().startsWith('OR'))) return 'X';
+    const k = Number(r.slice(-2)); if (!isFinite(k) || k < 1) return 'X';
+    return k <= 4 ? 'F3' : k <= 8 ? 'F4' : k <= 12 ? 'F5' : k <= 16 ? 'F6' : 'X';
+  }
+
+  /* compact de-identified row: [date1, startMin, room, ane_tm, pacu_tm, asa, monthNo, yearBE, sourceRow, serviceDate(คอลัมน์ date)] */
+  function parseSheet(aoa) {
+    let hi = -1, idx = {};
+    for (let i = 0; i < Math.min(aoa.length, 15); i++) {
+      const cells = (aoa[i] || []).map((c) => String(c ?? '').trim().toLowerCase());
+      if (cells.includes('ane_tm') && cells.includes('room_name')) { hi = i; cells.forEach((c, j) => { if (c && !(c in idx)) idx[c] = j; }); break; }
+    }
+    if (hi < 0) return { error: 'ไม่พบหัวตาราง (ต้องมีคอลัมน์ room_name และ ane_tm)' };
+    const missing = NEED.filter((k) => !(k in idx) && k !== 'date1');
+    if (!('date1' in idx) && !('date' in idx)) missing.push('date1');
+    if (missing.length) return { error: 'ไฟล์ไม่มีคอลัมน์: ' + missing.join(', ') };
+    const get = (row, k) => (k in idx ? row[idx[k]] : undefined);
+    const rows = []; let blankRows = 0;
+    for (let i = hi + 1; i < aoa.length; i++) {
+      const row = aoa[i] || [];
+      if (row.every((c) => c == null || c === '')) { blankRows++; continue; }
+      const d1 = toYmd(get(row, 'date1')) || toYmd(get(row, 'date'));
+      const monthTxt = String(fixThai(get(row, 'month')) ?? '').trim();
+      let mNo = parseInt(monthTxt.slice(0, 2), 10), yr = num(get(row, 'year'));
+      if (!(mNo >= 1 && mNo <= 12) && d1) mNo = +d1.slice(5, 7);
+      if (yr && yr < 2400) yr += 543;
+      if (!yr && d1) yr = +d1.slice(0, 4) + 543;
+      rows.push([d1, toMin(get(row, 'time1')), String(fixThai(get(row, 'room_name')) ?? '').trim(),
+        aneOf(get(row, 'ane_tm')), num(get(row, 'pacu_tm')), normAsa(fixThai(get(row, 'asa'))), mNo || null, yr || null, i + 1, toYmd(get(row, 'date'))]);
+    }
+    return { rows, headerRow: hi + 1, sheetRows: aoa.length, blankRows };
+  }
+
+  function fiscal(mNo, yr) { if (!mNo || !yr) return null; return { fy: yr + (mNo >= 10 ? 1 : 0), fidx: ((mNo - 10 + 12) % 12) + 1 }; }
+  const isWorkday = (ymd, hol) => { const [y, m, d] = ymd.split('-').map(Number); const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); return wd >= 1 && wd <= 5 && !hol.has(ymd); };
+  function addDays(ymd, n) { const [y, m, d] = ymd.split('-').map(Number); const x = new Date(Date.UTC(y, m - 1, d + n)); return `${x.getUTCFullYear()}-${pad(x.getUTCMonth() + 1)}-${pad(x.getUTCDate())}`; }
+  /* วันที่ให้บริการ = คอลัมน์ date ของไฟล์ Export (ระบบนับเวรดึกหลังเที่ยงคืนของวันสุดท้ายเป็นวันก่อนหน้าแล้ว)
+     ถ้าไม่มีคอลัมน์ date: เวรดึก 00:00–08:29 = วันก่อนหน้า */
+  function serviceDate(d1, t) { return (d1 && t != null && t < IN_FROM) ? addDays(d1, -1) : d1; }
+  const svcDate = (r) => r[9] || serviceDate(r[0], r[1]);
+  function fiscalOf(r) { const sd = svcDate(r); return sd ? fiscal(+sd.slice(5, 7), +sd.slice(0, 4) + 543) : fiscal(r[6], r[7]); }
+
+  /* ASA ว่าง -> ASA 1 (ในเวลา) / ASA 1E (นอกเวลา) ตามกติกากลุ่มงาน · opts.asaRaw = แสดงเป็น Missing ASA ตามต้นฉบับ */
+  function classify(r, hol, opts = {}) {
+    const [d1, t, room, ane, pacu, asaRaw] = r;
+    const f = fiscalOf(r);
+    if (ane == null) return { ex: 'aneBlank', f };
+    if (ane === -1 || !isFinite(ane)) return { ex: 'aneInvalid', f };
+    if (!(ane > 0)) return { ex: 'aneZero', f };
+    let floor = floorOf(room), otherRoom = false;
+    if (floor === 'X') { floor = 'F4'; otherRoom = true; }   // ห้องนอก OR 1–16 (RR, หอผู้ป่วย, Scope, รับ Set ฯลฯ) -> ชั้น 4
+    const inTime = !!d1 && t != null && isWorkday(d1, hol) && t >= IN_FROM && t <= IN_TO;
+    const min = PREOP + ane + pacu;
+    const level = min <= 90 ? 1 : min <= 150 ? 2 : min <= 210 ? 3 : 4;
+    let asa, asaMissing = !asaRaw;
+    if (asaMissing) asa = opts.asaRaw ? MISSING : (inTime ? 'ASA 1' : 'ASA 1E');
+    else asa = ASA.includes(asaRaw) ? asaRaw : OTHER_ASA;
+    const sd = svcDate(r);
+    return { f, floor, otherRoom, room, inTime, min, level, w: WEIGHTS[level], asa, asaMissing, noTime: t == null,
+      nightShifted: !!d1 && sd !== d1 && sd.slice(5, 7) !== d1.slice(5, 7) };
+  }
+
+  const blank = () => ({ cases: 0, L: [0, 0, 0, 0, 0], ww: 0, min: 0, asa: {} });
+  function add(g, c) { g.cases++; g.L[c.level]++; g.ww += c.w; g.min += c.min; g.asa[c.asa] = (g.asa[c.asa] || 0) + 1; }
+  function aggregate(rows, hol, fy, from, to, opts = {}) {
+    const G = {}; GROUPS.forEach((k) => (G[k] = blank()));
+    const outBy = {}; FLOORS.forEach((k) => (outBy[k] = blank()));
+    const ex = { rows: 0, aneZero: 0, aneBlank: 0, aneInvalid: 0, other: { in: 0, out: 0, rooms: {} }, asaMissing: { in: 0, out: 0 }, nightIn: 0, noTime: 0 };
+    for (const r of rows) {
+      const c = classify(r, hol, opts);
+      if (!c.f || c.f.fy !== fy || c.f.fidx < from || c.f.fidx > to) continue;
+      ex.rows++;
+      if (c.ex) { ex[c.ex]++; continue; }
+      if (c.otherRoom) { ex.other[c.inTime ? 'in' : 'out']++; const k = c.room || '(ไม่ระบุห้อง)'; ex.other.rooms[k] = (ex.other.rooms[k] || 0) + 1; }
+      if (c.asaMissing) ex.asaMissing[c.inTime ? 'in' : 'out']++;
+      if (c.nightShifted) ex.nightIn++;
+      if (c.noTime) ex.noTime++;
+      add(G.TOTAL, c);
+      if (c.inTime) { add(G[c.floor], c); add(G.INTIME, c); } else { add(G.OUT, c); add(outBy[c.floor], c); }
+    }
+    return { G, outBy, ex };
+  }
+
+  /* Workload FTE: Weighted Workload is standard nursing hours (weight = ชม.การพยาบาลมาตรฐานต่อราย) */
+  function metrics(g, nhHours, months) {
+    const base = FTE_MONTH * months, has = nhHours > 0;
+    const wh = g.min / 60, req = g.ww / base, act = has ? nhHours / base : null;
+    return {
+      cases: g.cases, L: g.L, ww: g.ww, nh: nhHours || 0, wh,
+      prod: has ? (g.ww / nhHours) * 100 : null,
+      req, act, gap: has ? act - req : null, util: has ? (req / act) * 100 : null,
+      serviceFte: wh / base,                     // ข้อมูลประกอบ: เวลาบริการจริง ÷ 140 (สูตรเดิม)
+    };
+  }
+  function nhFor(key, nh) {
+    if (!nh) return 0;
+    if (key === 'INTIME') return FLOORS.reduce((s, k) => s + (nh[k] || 0), 0);
+    if (key === 'TOTAL') return FLOORS.reduce((s, k) => s + (nh[k] || 0), 0) + (nh.OUT || 0);
+    return nh[key] || 0;
+  }
+
+  /* row-level audit for one fiscal month: every source row with where it went and why */
+  function audit(rows, hol, fy, fidx, opts = {}) {
+    const out = { counted: 0, excluded: [], movedOut: [], movedIn: [], nightLast: [], otherRoom: [], asaMissing: [], noTime: [] };
+    for (const r of rows) {
+      const c = classify(r, hol, opts), mine = c.f && c.f.fy === fy && c.f.fidx === fidx;
+      const fileMonth = r[9] ? fiscal(+r[9].slice(5, 7), +r[9].slice(0, 4) + 543) : (r[6] && r[7] ? fiscal(r[6], r[7]) : null), fromThisFile = fileMonth && fileMonth.fy === fy && fileMonth.fidx === fidx;
+      const info = { row: r[8] ?? null, date: r[0], time: r[1], room: r[2], ane: r[3], asa: r[5] };
+      if (!mine) { if (fromThisFile) out.movedOut.push({ ...info, to: c.f, reason: 'วันที่ให้บริการเป็นเดือนอื่น' }); continue; }
+      if (!fromThisFile) out.movedIn.push({ ...info, reason: 'มาจากไฟล์ของเดือนอื่น' });
+      if (c.ex) { out.excluded.push({ ...info, reason: { aneZero: 'ane_tm = 0', aneBlank: 'ane_tm ว่าง', aneInvalid: 'ane_tm ไม่ใช่ตัวเลข' }[c.ex] }); continue; }
+      out.counted++;
+      if (c.nightShifted) out.nightLast.push(info);
+      if (c.otherRoom) out.otherRoom.push({ ...info, inTime: c.inTime });
+      if (c.asaMissing) out.asaMissing.push({ ...info, inTime: c.inTime });
+      if (c.noTime) out.noTime.push(info);
+    }
+    return out;
+  }
+
+  /* Coverage-based staffing (แยกจาก Workload FTE) — cfg per floor: {rooms, perRoom, pacu, floatPlan, floatActual, hoursPerDay, days, actualHours?} */
+  function coverage(cfg, months) {
+    const base = FTE_MONTH * months;
+    const perShiftPlan = (cfg.rooms || 0) * (cfg.perRoom || 0) + (cfg.pacu || 0) + (cfg.floatPlan || 0);
+    const perShiftActual = (cfg.rooms || 0) * (cfg.perRoom || 0) + (cfg.pacu || 0) + (cfg.floatActual || 0);
+    const hd = (cfg.hoursPerDay || 0) * (cfg.days || 0);
+    const reqHours = perShiftPlan * hd;
+    const simulated = !(cfg.actualHours > 0);
+    const actHours = simulated ? perShiftActual * hd : cfg.actualHours;
+    const floatPlanH = (cfg.floatPlan || 0) * hd, floatActH = (cfg.floatActual || 0) * hd;
+    return {
+      perShiftPlan, perShiftActual, floatShort: Math.max(0, (cfg.floatPlan || 0) - (cfg.floatActual || 0)),
+      reqHours, actHours, simulated,
+      reqFte: base ? reqHours / base : null, actFte: base ? actHours / base : null,
+      gap: base ? (actHours - reqHours) / base : null,
+      floatCov: floatPlanH > 0 ? (floatActH / floatPlanH) * 100 : null,
+    };
+  }
+  function workdays(fy, fidx, hol) {
+    const calYear = (fidx <= 3 ? fy - 1 : fy) - 543, m = ((fidx + 8) % 12) + 1;
+    const n = new Date(Date.UTC(calYear, m, 0)).getUTCDate(); let w = 0;
+    for (let d = 1; d <= n; d++) if (isWorkday(`${calYear}-${pad(m)}-${pad(d)}`, hol)) w++;
+    return { workdays: w, days: n };
+  }
+
+  return { fixThai, parseSheet, classify, fiscalOf, serviceDate, svcDate, aggregate, metrics, nhFor, audit, coverage, workdays,
+    fiscal, floorOf, toMin, toYmd, WEIGHTS, GROUPS, FLOORS, ASA, MISSING, OTHER_ASA, MONTHS, MONTHS_FULL, FTE_MONTH, FTE_YEAR };
+})();
+
+
+</script>
+<script>
+(() => {
+const E = Engine;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = (n) => String(n).padStart(2, '0');
+const fmt = (n, d = 2) => (n == null || !isFinite(n)) ? 'N/A' : n.toLocaleString('th-TH', {minimumFractionDigits: d, maximumFractionDigits: d});
+const fmt0 = (n) => (n == null) ? '—' : Math.round(n).toLocaleString('th-TH');
+const LABEL = {F3:'ชั้น 3', F4:'ชั้น 4', F5:'ชั้น 5', F6:'ชั้น 6', INTIME:'รวมในเวลา', OUT:'นอกเวลา (ทุกชั้น)', TOTAL:'รวมทั้งหมด'};
+const COLOR = {F3:'var(--f3)', F4:'var(--f4)', F5:'var(--f5)', F6:'var(--f6)', INTIME:'var(--intime)', OUT:'var(--out)', TOTAL:'var(--tot)'};
+const NHKEYS = ['F3','F4','F5','F6','OUT'];
+const keyOf = (fy, fidx) => `${fy}-${pad(fidx)}`;
+const monthLabel = (fy, fidx) => `${E.MONTHS_FULL[fidx-1]} ${fidx <= 3 ? fy - 1 : fy}`;
+const todayFiscal = () => { const d = new Date(); return E.fiscal(d.getMonth()+1, d.getFullYear()+543); };
+
+const S = {
+  db: null, user: null, canEdit: false, myId: null,
+  uploads: {}, rowsDocs: {}, nh: {}, config: {holidays: [], low: 90, high: 110, holidays:[{date:'2026-10-13',name:'วันนวมินทรมหาราช'},{date:'2026-10-23',name:'วันปิยมหาราช'}]}, audit: [],
+  allRows: [], loaded: {uploads:false, rows:false, nh:false, config:false}, stale: false,
+  fy: null, fidx: null, mode: 'month', pending: null, hoursFy: null, asaRaw: false, staffing: null,
+};
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+try { const v = JSON.parse(localStorage.getItem('anes-prod-view') || '{}'); if (v.mode) S.mode = v.mode; } catch {}
+
+/* ---------- data access ---------- */
+const holSet = () => new Set((S.config.holidays || []).map((h) => h.date));
+const rowsOf = (d) => typeof d.rows === 'string' ? JSON.parse(d.rows) : (d.rows || []);
+function rebuildRows(){ S.allRows = Object.values(S.rowsDocs).sort((a,b) => (a.key+a.part) < (b.key+b.part) ? -1 : 1).flatMap(rowsOf); }
+function nhRange(fy, from, to){
+  const o = {F3:0,F4:0,F5:0,F6:0,OUT:0}; let filled = 0;
+  for (let i = from; i <= to; i++){ const d = S.nh[keyOf(fy,i)]; if (d && NHKEYS.some((k) => d[k] > 0)){ filled++; NHKEYS.forEach((k) => o[k] += +d[k] || 0); } }
+  return {o, filled};
+}
+function period(){ const from = S.mode === 'ytd' ? 1 : S.fidx; return {fy: S.fy, from, to: S.fidx, months: S.fidx - from + 1}; }
+function compute(fy, from, to, opts){
+  const a = E.aggregate(S.allRows, holSet(), fy, from, to, opts);
+  const {o: nh, filled} = nhRange(fy, from, to);
+  const months = to - from + 1;
+  const M = {}; E.GROUPS.forEach((k) => M[k] = E.metrics(a.G[k], E.nhFor(k, nh), months));
+  return {a, M, nh, filled, months};
+}
+function state(prod){
+  if (prod == null) return ['wait','N/A · รอ Nursing Hours'];
+  if (prod < S.config.low) return ['warn','ต่ำกว่าเกณฑ์'];
+  if (prod > S.config.high) return ['bad','สูงกว่าเกณฑ์'];
+  return ['good','อยู่ในเกณฑ์'];
+}
+const chip = (prod) => { const [c,t] = state(prod); return `<span class="chip ${c}">${t}</span>`; };
+const knownFys = () => {
+  const s = new Set([todayFiscal().fy]);
+  S.allRows.forEach((r) => { const f = E.fiscalOf(r); if (f) s.add(f.fy); });
+  Object.values(S.uploads).forEach((u) => s.add(u.fy)); Object.values(S.nh).forEach((n) => s.add(n.fy));
+  return [...s].sort((a,b) => b - a);
+};
+function defaultPeriod(){
+  const keys = Object.keys(S.uploads).sort();
+  if (keys.length){ const u = S.uploads[keys[keys.length-1]]; return {fy: u.fy, fidx: u.fidx}; }
+  return todayFiscal();
+}
+
+/* ---------- header controls ---------- */
+function renderControls(){
+  const fys = knownFys();
+  $('#selFy').innerHTML = fys.map((y) => `<option value="${y}" ${y===S.fy?'selected':''}>${y}</option>`).join('');
+  $('#selMonth').innerHTML = E.MONTHS_FULL.map((m,i) => `<option value="${i+1}" ${i+1===S.fidx?'selected':''}>${m} ${i<3?S.fy-1:S.fy}</option>`).join('');
+  $('#modeMonth').setAttribute('aria-pressed', S.mode === 'month'); $('#modeYtd').setAttribute('aria-pressed', S.mode === 'ytd');
+}
+$('#selFy').addEventListener('change', (e) => { S.fy = +e.target.value; S.periodSet = true; render(); });
+$('#selMonth').addEventListener('change', (e) => { S.fidx = +e.target.value; S.periodSet = true; render(); });
+const setMode = (m) => { S.mode = m; try { localStorage.setItem('anes-prod-view', JSON.stringify({mode:m})); } catch {} render(); };
+$('#modeMonth').addEventListener('click', () => setMode('month'));
+$('#modeYtd').addEventListener('click', () => setMode('ytd'));
+
+/* ---------- views ---------- */
+const VIEWS = {members, overview, detail, annual, asa, staffing, report, upload, hours, holidays, rules};
+const viewName = () => { const h = location.hash.slice(1); return VIEWS[h] ? h : 'overview'; };
+window.addEventListener('hashchange', render);
+
+function periodText(p){
+  return S.mode === 'ytd' ? `สะสม ต.ค. ${p.fy-1} – ${monthLabel(p.fy, p.to)} (${p.months} เดือน)` : monthLabel(p.fy, p.to);
+}
+
+function reconcile(fy, fidx){
+  const key = keyOf(fy, fidx), up = S.uploads[key]; if (!up) return null;
+  let mine = 0, toPrev = 0, toNext = 0, fromOther = 0;
+  Object.values(S.rowsDocs).forEach((d) => rowsOf(d).forEach((r) => { const f = E.fiscalOf(r); const k = f ? keyOf(f.fy, f.fidx) : '';
+    if (d.key === key){ if (k === key) mine++; else if (k < key) toPrev++; else toNext++; } else if (k === key) fromOther++; }));
+  return {fileRows: up.rowCount, toPrev, toNext, fromOther};
+}
+function overview(){
+  const p = period(); const {M, filled} = compute(p.fy, p.from, p.to);
+  const up = S.uploads[keyOf(p.fy, p.to)];
+  if (!M.TOTAL.cases && !up){
+    return `<div class="panel empty"><h2>ยังไม่มีข้อมูล${esc(periodText(p))}</h2>
+      <p class="note">นำเข้าไฟล์สถิติดมยาของเดือนนี้ที่เมนู “นำเข้าข้อมูล” แล้วกรอก Nursing Hours ระบบจะคำนวณให้อัตโนมัติ</p>
+      ${S.canEdit ? '<a class="btn primary" href="#upload">นำเข้าข้อมูล</a>' : ''}</div>`;
+  }
+  const T = M.TOTAL, [tc] = state(T.prod);
+  const keys = ['F3','F4','F5','F6','OUT'];
+  const name = (k) => k === 'OUT' ? 'นอกเวลา' : LABEL[k];
+  const by = {good:[], warn:[], bad:[], wait:[]};
+  keys.forEach((k) => by[state(M[k].prod)[0]].push(k));
+  const say = [];
+  if (by.bad.length) say.push(`สูงกว่าเกณฑ์: ${by.bad.map((k) => `${name(k)} (${fmt(M[k].prod)}%)`).join(', ')}`);
+  if (by.warn.length) say.push(`ต่ำกว่าเกณฑ์: ${by.warn.map((k) => `${name(k)} (${fmt(M[k].prod)}%)`).join(', ')}`);
+  if (by.good.length) say.push(`อยู่ในเกณฑ์: ${by.good.map(name).join(', ')}`);
+  if (by.wait.length) say.push(`รอ Nursing Hours: ${by.wait.map(name).join(', ')}`);
+  // 12-month sparkline of total productivity
+  const pts = []; for (let i = 1; i <= 12; i++){ const m = compute(p.fy, i, i).M.TOTAL; pts.push(m.prod); }
+  const maxV = Math.max(200, ...pts.filter((v) => v != null)); const W = 240, H = 56;
+  const xs = (i) => 6 + i * (W - 12) / 11, ys = (v) => H - 6 - v / maxV * (H - 12);
+  let d = ''; pts.forEach((v, i) => { if (v != null) d += (d ? 'L' : 'M') + xs(i).toFixed(1) + ',' + ys(v).toFixed(1); });
+  const dots = pts.map((v, i) => v == null ? '' : `<circle cx="${xs(i).toFixed(1)}" cy="${ys(v).toFixed(1)}" r="${i + 1 === p.to ? 4 : 2.5}" fill="${i + 1 === p.to ? 'var(--accent-ink)' : 'rgba(255,255,255,.6)'}"><title>${E.MONTHS[i]} ${fmt(v)}%</title></circle>`).join('');
+  const spark = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="แนวโน้ม Productivity รวมรายเดือน">
+    <rect x="0" y="${ys(S.config.high)}" width="${W}" height="${ys(S.config.low) - ys(S.config.high)}" fill="rgba(255,255,255,.14)"/>
+    ${d ? `<path d="${d}" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2"/>` : ''}${dots}</svg>`;
+  const card = (k) => { const m = M[k], [c, txt] = state(m.prod), w = m.prod == null ? 0 : Math.min(m.prod, 200) / 2;
+    return `<a class="gcard" href="#detail" style="--c:${COLOR[k]}">
+      <div class="gh"><span class="dot"></span>${k === 'OUT' ? 'นอกเวลา <span class="dim">ทุกชั้น</span>' : LABEL[k] + ' <span class="dim">ในเวลา</span>'}</div>
+      <div class="gv">${m.prod == null ? 'N/A' : fmt(m.prod, 1)}<small>${m.prod == null ? '' : ' %'}</small></div>
+      <div class="gauge"><div class="band" style="left:${S.config.low/2}%;width:${(S.config.high-S.config.low)/2}%"></div><div class="bar" style="width:${w}%"></div></div>
+      <span class="chip ${c}">${txt}</span>
+      <div class="gm"><span>${fmt0(m.cases)} ราย</span><span>FTE ${m.gap == null ? 'N/A' : (m.gap < 0 ? 'ขาด ' + fmt(-m.gap, 1) : 'เหลือ ' + fmt(m.gap, 1))}</span></div></a>`; };
+  const nhNeed = p.months - filled;
+  const R0 = 70, CX = 90, CY = 86, ang = (v) => Math.PI * (1 - Math.min(Math.max(v, 0), 200) / 200);
+  const pt = (v, r) => [CX + r * Math.cos(ang(v)), CY - r * Math.sin(ang(v))];
+  const arc = (a, b, r) => { const [x1, y1] = pt(a, r), [x2, y2] = pt(b, r); return `M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)}`; };
+  const sc = {good:'#34D399', bad:'#FF6B6B', warn:'#FBBF24', wait:'#CBD5E1'}[tc];
+  const dial = `<svg class="dial" viewBox="0 -12 180 116" width="210" height="135" role="img" aria-label="Productivity ${fmt(T.prod)}% เทียบเกณฑ์">
+    <path d="${arc(0, 200, R0)}" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="14" stroke-linecap="round"/>
+    <path d="${arc(S.config.low, S.config.high, R0)}" fill="none" stroke="rgba(52,211,153,.55)" stroke-width="14"/>
+    ${T.prod != null ? `<path d="${arc(0, T.prod, R0)}" fill="none" stroke="${sc}" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="${pt(T.prod, R0)[0].toFixed(1)}" cy="${pt(T.prod, R0)[1].toFixed(1)}" r="7" fill="${sc}" stroke="#fff" stroke-width="2.5"/>` : ''}
+    <text class="lab" x="${CX - R0}" y="102" text-anchor="middle">0</text><text class="lab" x="${CX}" y="-2" text-anchor="middle">100%</text><text class="lab" x="${CX + R0}" y="102" text-anchor="middle">200</text>
+    <text class="lab" x="${CX}" y="80" text-anchor="middle">เกณฑ์ ${S.config.low}–${S.config.high}</text></svg>`;
+  return `
+  <section class="hero hero-${tc}">
+    <div class="hero-main">
+      <div class="hero-k">Productivity รวมทั้งกลุ่มงาน · ${esc(periodText(p))}</div>
+      <div class="hero-v">${T.prod == null ? 'N/A' : fmt(T.prod)}<small>${T.prod == null ? '' : ' %'}</small></div>
+      <div class="hero-s"><span class="chip ${tc}">${state(T.prod)[1]}</span><span>เกณฑ์ ${S.config.low}–${S.config.high}%</span></div>
+      <div class="hero-f"><span><b>${fmt0(T.cases)}</b> ราย</span><span>ในเวลา <b>${fmt(M.INTIME.prod, 1)}%</b></span><span>นอกเวลา <b>${fmt(M.OUT.prod, 1)}%</b></span>
+        <span>Workload FTE <b>${T.gap == null ? 'N/A' : (T.gap < 0 ? 'ขาด ' + fmt(-T.gap, 1) : 'เหลือ ' + fmt(T.gap, 1))}</b></span></div>
+    </div>
+    <div class="hero-side">${dial}${pts.filter((v) => v != null).length >= 2 ? `${spark}<div class="hero-cap">แนวโน้มปีงบ ${p.fy}</div>` : ''}</div>
+  </section>
+  <p class="say" style="--sc:${by.bad.length ? 'var(--bad)' : by.warn.length ? 'var(--warn)' : 'var(--good)'}">${say.map(esc).join(' · ')}</p>
+  <section class="gcards">${keys.map(card).join('')}</section>
+  <div class="status foot">
+    <span>ไฟล์ ${up ? `<b>${esc(up.fileName)}</b>` : (S.mode === 'ytd' ? '<b>หลายเดือน</b>' : '<b>ยังไม่นำเข้า</b>')}</span>
+    <span>Nursing Hours ${nhNeed ? `<span class="chip wait">ขาด ${nhNeed} เดือน</span>` : '<span class="chip good">ครบ</span>'}</span>
+    <a href="#detail">ดูตาราง Level · FTE · กระทบยอด →</a>
+  </div>`;
+}
+
+function detail(){
+  const p = period(); const {a, M, filled} = compute(p.fy, p.from, p.to);
+  const up = S.uploads[keyOf(p.fy, p.to)];
+  if (!M.TOTAL.cases && !up){
+    return `<div class="panel empty"><h2>ยังไม่มีข้อมูล${esc(periodText(p))}</h2>
+      <p class="note">นำเข้าไฟล์สถิติดมยาของเดือนนี้ที่เมนู “นำเข้าข้อมูล” แล้วกรอก Nursing Hours ระบบจะคำนวณให้อัตโนมัติ</p>
+      ${S.canEdit ? '<a class="btn primary" href="#upload">นำเข้าข้อมูล</a>' : ''}</div>`;
+  }
+  const nhNeed = p.months - filled;
+  const T = M.TOTAL;
+  const tile = (lbl, val, unit, how) => `<div class="tile"><div class="lbl">${lbl}</div><div class="v">${val}<small>${unit}</small></div>
+      <details><summary>ดูสูตร</summary><p>${how}</p></details></div>`;
+  const strip = `<section class="tiles" aria-label="ตัวชี้วัดหลัก">
+    ${tile('เคสที่ผ่านเกณฑ์', fmt0(T.cases), ' ราย', 'นับทุกแถวที่ ane_tm มากกว่า 0 เป็น 1 ราย · ane_tm = 0 / ว่าง / ไม่ใช่ตัวเลข ไม่นับ · ไม่ตัดเคสเพราะห้องหรือ ASA')}
+    ${tile('Weighted Workload', fmt(T.ww), ' ชม.มาตรฐาน', 'Σ (จำนวนเคสแต่ละ Level × Weight) · Level จาก Total Time = Pre-op 30 + ane_tm + PACU · Weight 2.58 / 4.75 / 7.08 / 9.25')}
+    ${tile('Actual Nursing Hours', T.nh ? fmt0(T.nh) : 'N/A', ' ชม.', 'ชั่วโมงปฏิบัติงานจริงจากตารางเวร (ไม่ใช่จำนวนเวร) · ชั้น 3–6 ในเวลา + นอกเวลารวมทุกชั้น')}
+    ${tile('Productivity', fmt(T.prod), T.prod==null?'':' %', `Weighted Workload ÷ Actual Nursing Hours × 100 · เกณฑ์ ${S.config.low}–${S.config.high}%`)}
+    ${tile('Workload Required FTE', fmt(T.req), ' FTE', `Weighted Workload ÷ (140 × ${p.months} เดือน) · 1 FTE = 140 ชม./เดือน = 1,680 ชม./ปี`)}
+    ${tile('Actual FTE Equivalent', fmt(T.act), ' FTE', `Actual Nursing Hours ÷ (140 × ${p.months} เดือน) · ส่วนต่าง (Gap) = ${fmt(T.gap)} FTE · ติดลบ = กำลังคนไม่พอกับภาระงาน`)}
+  </section>`;
+  const outWarn = M.OUT.cases > 0 && !(M.OUT.nh > 0);
+  const kpi = (k, sub) => { const m = M[k]; return `<div class="kpi" style="--c:${COLOR[k]}">
+      <div class="lbl">${LABEL[k]} ${sub ? `<span class="dim">· ${sub}</span>` : ''}</div>
+      <div class="big">${m.prod==null?'—':fmt(m.prod)}<small> %</small></div>
+      <div>${chip(m.prod)}</div>
+      <div class="meta"><span>เคส <b>${fmt0(m.cases)}</b></span><span>Workload <b>${fmt(m.ww)}</b></span><span>Nursing Hours <b>${fmt0(m.nh)}</b></span></div></div>`; };
+  const floorCard = (k) => { const m = M[k]; const w = m.prod==null?0:Math.min(m.prod,200)/2;
+    return `<div class="fl" style="--c:${COLOR[k]}"><div class="h"><span class="name"><span class="dot"></span>${LABEL[k]} ในเวลา</span>${chip(m.prod)}</div>
+      <div class="v">${m.prod==null?'—':fmt(m.prod)+' %'}</div>
+      <div class="gauge" title="สเกล 0–200% แถบเขียว = เกณฑ์ ${S.config.low}–${S.config.high}%"><div class="band" style="left:${S.config.low/2}%;width:${(S.config.high-S.config.low)/2}%"></div><div class="bar" style="width:${w}%"></div></div>
+      <div class="m">${fmt0(m.cases)} เคส · Workload ${fmt(m.ww)} · NH ${fmt0(m.nh)} ชม.</div></div>`; };
+  const cols = ['F3','F4','F5','F6','INTIME','OUT','TOTAL'];
+  const hd = cols.map((k) => `<th class="n ${['INTIME','TOTAL'].includes(k)?'col-sum':''}"><span class="dot" style="--c:${COLOR[k]}"></span>${LABEL[k]}${E.FLOORS.includes(k)?'<br><span class="dim">ในเวลา</span>':''}</th>`).join('');
+  const line = (lbl, f, cls='') => `<tr class="${cls}"><td class="lbl">${lbl}</td>${cols.map((k) => `<td class="n ${['INTIME','TOTAL'].includes(k)?'col-sum':''}">${f(M[k])}</td>`).join('')}</tr>`;
+  const gapCell = (m) => m.gap==null?'N/A':`<span style="color:${m.gap<0?'var(--bad)':'var(--good)'}">${fmt(m.gap)}</span>`;
+  const outRows = E.FLOORS.map((k) => { const g = a.outBy[k]; return `<tr><td class="lbl"><span class="dot" style="--c:${COLOR[k]}"></span> ${LABEL[k]}</td><td class="n">${fmt0(g.cases)}</td><td class="n">${fmt(g.ww)}</td><td class="n">${fmt(g.min/60)}</td><td class="n">${M.OUT.cases?fmt(g.cases/M.OUT.cases*100,1)+'%':'—'}</td></tr>`; }).join('');
+  const exRooms = Object.entries(a.ex.other.rooms).map(([r,c]) => `${esc(r)} ${c}`).join(', ');
+  const rec = S.mode === 'month' ? reconcile(p.fy, p.to) : null;
+  return `
+  <div class="status">
+    <span>ช่วงข้อมูล <b>${esc(periodText(p))}</b></span>
+    <span>ไฟล์สถิติ ${up ? `<b>${esc(up.fileName)}</b> (${fmt0(up.rowCount)} แถว)` : (S.mode==='ytd'?'<b>หลายไฟล์</b>':'<b>ยังไม่นำเข้า</b>')}</span>
+    <span>Nursing Hours ${nhNeed ? `<span class="chip wait">ขาด ${nhNeed} เดือน</span>` : '<span class="chip good">ครบ</span>'}</span>
+    <button class="btn" id="dlCsv">ดาวน์โหลดสรุป (CSV)</button>
+  </div>
+  ${outWarn ? `<div class="callout warn">มีเคสนอกเวลา ${fmt0(M.OUT.cases)} เคส แต่ยังไม่ได้กรอก Nursing Hours นอกเวลา Productivity “นอกเวลา” และ “รวมทั้งหมด” จึงยังไม่แสดง ${S.canEdit?'<a href="#hours">กรอกชั่วโมง</a>':''}</div>`:''}
+  <h2 class="sec">ตัวชี้วัดหลัก · รวมทั้งหมด (กด “ดูสูตร” เพื่อดูวิธีคิด)</h2>${strip}
+  <section class="panel"><h2>ตารางสรุป Productivity และ FTE</h2>
+    <p class="sub">Productivity = Σ Weighted Workload ÷ Σ Nursing Hours × 100 · Workload Required FTE = Weighted Workload ÷ (140 × ${p.months} เดือน)</p>
+    <div class="tw"><table><thead><tr><th>รายการ</th>${hd}</tr></thead><tbody>
+      ${line('จำนวนเคส', (m) => fmt0(m.cases))}
+      ${[1,2,3,4].map((l) => line(`<span class="dim">Level ${l} (×${E.WEIGHTS[l]})</span>`, (m) => fmt0(m.L[l]))).join('')}
+      ${line('Weighted Workload', (m) => fmt(m.ww))}
+      ${line('Actual Nursing Hours (ชม.)', (m) => m.nh?fmt0(m.nh):'N/A')}
+      ${line('Productivity %', (m) => fmt(m.prod), 'em')}
+      ${line('Workload Required FTE', (m) => fmt(m.req))}
+      ${line('Actual FTE Equivalent', (m) => fmt(m.act))}
+      ${line('Workload FTE Gap', gapCell)}
+      ${line('<span class="dim">ชม.บริการจริง (ข้อมูลประกอบ)</span>', (m) => `<span class="dim">${fmt(m.wh)}</span>`)}
+    </tbody></table></div>
+    <p class="note" style="margin:10px 0 0">Workload FTE Gap ติดลบ = กำลังคนไม่พอกับภาระงานมาตรฐาน · ชม.บริการจริง = Σ Total Time ÷ 60 เก็บไว้เป็นข้อมูลประกอบ ไม่ใช้คำนวณ FTE · การวิเคราะห์ตามแผนเปิดห้องอยู่ที่เมนู “กำลังคน”</p></section>
+  <div class="row">
+    <section class="panel"><h2>เคสนอกเวลา แยกตามชั้นที่ทำ</h2><p class="sub">นอกเวลา = วันทำการที่เริ่มก่อน 08:30 หรือหลัง 16:30 และเสาร์/อาทิตย์/วันหยุดทุกเวลา</p>
+      <div class="tw"><table><thead><tr><th>ชั้น</th><th class="n">เคส</th><th class="n">Workload</th><th class="n">ชม.ภาระงาน</th><th class="n">สัดส่วน</th></tr></thead><tbody>${outRows}
+      <tr class="em"><td>รวมนอกเวลา</td><td class="n">${fmt0(M.OUT.cases)}</td><td class="n">${fmt(M.OUT.ww)}</td><td class="n">${fmt(M.OUT.wh)}</td><td class="n">100%</td></tr></tbody></table></div></section>
+    <section class="panel"><h2>กระทบยอดเคส</h2><p class="sub">นับทุกเคสที่มี ane_tm · ตรวจได้ว่าไม่มีเคสหล่นหาย</p>
+      <dl class="kv">
+      ${rec ? `<dt>แถวในไฟล์ Export</dt><dd class="num">${fmt0(rec.fileRows)}</dd>
+      ${rec.toPrev ? `<dt>− แถวที่วันที่ให้บริการเป็นเดือนก่อน</dt><dd class="num">${fmt0(rec.toPrev)}</dd>` : ''}
+      ${rec.toNext ? `<dt>− แถวที่เป็นเดือนถัดไป</dt><dd class="num">${fmt0(rec.toNext)}</dd>` : ''}
+      ${rec.fromOther ? `<dt>+ แถวจากไฟล์เดือนอื่น</dt><dd class="num">${fmt0(rec.fromOther)}</dd>` : ''}` : ''}
+      <dt>แถวของเดือนนี้</dt><dd class="num">${fmt0(a.ex.rows)}</dd>
+      <dt>− ane_tm = 0 / ว่าง / ไม่ใช่ตัวเลข (ไม่นับ)</dt><dd class="num">${fmt0(a.ex.aneZero + a.ex.aneBlank + a.ex.aneInvalid)}</dd>
+      <dt><b>= เคสที่นับ</b></dt><dd><b class="num">${fmt0(M.TOTAL.cases)}</b> ${a.ex.rows - a.ex.aneZero - a.ex.aneBlank - a.ex.aneInvalid === M.TOTAL.cases ? '<span class="chip good">ตรง</span>' : '<span class="chip bad">ไม่ตรง</span>'}</dd>
+      <dt>ห้องนอก OR จัดเข้าชั้น 4</dt><dd><span class="num">${fmt0(a.ex.other.in + a.ex.other.out)}</span> <span class="dim">(ในเวลา ${a.ex.other.in} · นอกเวลา ${a.ex.other.out}${exRooms ? ' · ' + exRooms : ''})</span></dd>
+      <dt>ASA ว่าง → ใส่ ASA 1 / 1E ตามกติกา</dt><dd><span class="num">${fmt0(a.ex.asaMissing.in + a.ex.asaMissing.out)}</span> <span class="dim">(ในเวลา ${a.ex.asaMissing.in} · นอกเวลา ${a.ex.asaMissing.out})</span></dd>
+      ${a.ex.nightIn ? `<dt>เวรดึกต้นเดือนถัดไปที่นับรวมเดือนนี้</dt><dd class="num">${fmt0(a.ex.nightIn)}</dd>` : ''}
+      </dl><p class="note" style="margin:10px 0 0"><a href="#report">ดูรายงานพร้อมเลขแถวต้นทาง</a></p></section>
+  </div>`;
+}
+
+function annual(){
+  const fy = S.fy; const rows = []; let maxP = 200;
+  for (let i = 1; i <= 12; i++){
+    const m = compute(fy, i, i).M, y = compute(fy, 1, i).M;
+    rows.push({i, m, y}); ['INTIME','OUT','TOTAL'].forEach((k) => { if (m[k].prod) maxP = Math.max(maxP, Math.ceil(m[k].prod/50)*50); });
+  }
+  const yr = compute(fy, 1, 12);
+  const annualReq = yr.a.G.TOTAL.ww/1680, annualAct = E.nhFor('TOTAL', yr.nh)/1680;
+  // chart
+  const W = 720, H = 250, L = 44, R = 12, T = 14, B = 30, iw = W-L-R, ih = H-T-B;
+  const x = (i) => L + (i-0.5) * iw/12, y = (v) => T + ih - v/maxP*ih;
+  const ticks = []; for (let v = 0; v <= maxP; v += 50) ticks.push(v);
+  const path = (k) => { let d = '', pts = ''; rows.forEach((r) => { const v = r.m[k].prod; if (v == null) return; d += (d?'L':'M') + x(r.i).toFixed(1) + ',' + y(v).toFixed(1); pts += `<circle cx="${x(r.i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" fill="${COLOR[k]}"><title>${LABEL[k]} ${E.MONTHS[r.i-1]} ${fmt(v)}%</title></circle>`; });
+    const c = COLOR[k]; return d ? `<path d="${d}" fill="none" stroke="${c}" stroke-width="2.2" ${k==='TOTAL'?'stroke-dasharray="5 4"':''}/>${pts}` : ''; };
+  const chart = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Productivity รายเดือน">
+    <rect x="${L}" y="${y(S.config.high)}" width="${iw}" height="${y(S.config.low)-y(S.config.high)}" fill="var(--band)"/>
+    ${ticks.map((v) => `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${v}%</text>`).join('')}
+    ${E.MONTHS.map((m,i) => `<text x="${x(i+1)}" y="${H-10}" text-anchor="middle">${m}</text>`).join('')}
+    ${path('INTIME')}${path('OUT')}${path('TOTAL')}</svg>`;
+  const legend = `<div class="legend"><span><i class="sw" style="--c:var(--intime)"></i>รวมในเวลา</span><span><i class="sw" style="--c:var(--out)"></i>นอกเวลา</span><span><i class="sw" style="--c:var(--tot)"></i>รวมทั้งหมด (เส้นประ)</span><span><i class="sw" style="--c:var(--good);height:8px;opacity:.35"></i>เกณฑ์ ${S.config.low}–${S.config.high}%</span></div>`;
+  const pc = (v) => { if (v == null) return '<td class="n dim">—</td>'; const [c] = state(v); return `<td class="n" style="color:var(--${c})">${fmt(v)}</td>`; };
+  const lastIdx = rows.reduce((m, r) => (r.m.TOTAL.cases > 0 || r.m.TOTAL.nh > 0) ? r.i : m, 0);
+  const body = rows.map((r) => r.i > lastIdx ? `<tr><td class="lbl dim">${monthLabel(fy, r.i)}</td><td colspan="17" class="dim">ยังไม่มีข้อมูล</td></tr>` : `<tr><td class="lbl">${monthLabel(fy, r.i)}</td><td class="n">${fmt0(r.m.TOTAL.cases)}</td><td class="n">${fmt(r.m.TOTAL.ww)}</td><td class="n">${r.m.TOTAL.nh?fmt0(r.m.TOTAL.nh):'—'}</td>${pc(r.m.INTIME.prod)}${pc(r.m.OUT.prod)}${pc(r.m.TOTAL.prod)}<td class="n">${fmt(r.m.TOTAL.wh)}</td><td class="n">${fmt(r.m.TOTAL.req)}</td><td class="n">${fmt(r.m.TOTAL.act)}</td><td class="n">${r.m.TOTAL.gap==null?'—':fmt(r.m.TOTAL.gap)}</td>
+     <td class="n col-sum">${fmt0(r.y.TOTAL.cases)}</td><td class="n col-sum">${fmt(r.y.TOTAL.ww)}</td><td class="n col-sum">${r.y.TOTAL.nh?fmt0(r.y.TOTAL.nh):'—'}</td>${pc(r.y.TOTAL.prod).replace('class="n','class="n col-sum')}<td class="n col-sum">${fmt(r.y.TOTAL.req)}</td><td class="n col-sum">${fmt(r.y.TOTAL.act)}</td><td class="n col-sum">${r.y.TOTAL.gap==null?'—':fmt(r.y.TOTAL.gap)}</td></tr>`).join('');
+  const heat = rows.map((r) => `<tr><td class="lbl">${E.MONTHS[r.i-1]}</td>${['F3','F4','F5','F6','INTIME','OUT','TOTAL'].map((k) => pc(r.m[k].prod)).join('')}</tr>`).join('')
+    + `<tr class="em"><td>YTD</td>${['F3','F4','F5','F6','INTIME','OUT','TOTAL'].map((k) => pc(yr.M[k].prod)).join('')}</tr>`;
+  return `
+  <section class="panel"><h2>Productivity รายเดือน ปีงบ ${fy}</h2><p class="sub">ต.ค. ${fy-1} – ก.ย. ${fy} · แถบเขียว = ช่วงเกณฑ์</p>${chart}${legend}</section>
+  <section class="panel"><h2>รายชั้นรายเดือน (Productivity %)</h2><p class="sub">ชั้น 3–6 เฉพาะในเวลา · นอกเวลารวมทุกชั้น · สีตามเกณฑ์</p>
+    <div class="tw"><table class="heat"><thead><tr><th>เดือน</th>${['F3','F4','F5','F6','INTIME','OUT','TOTAL'].map((k) => `<th class="n"><span class="dot" style="--c:${COLOR[k]}"></span>${LABEL[k]}</th>`).join('')}</tr></thead><tbody>${heat}</tbody></table></div></section>
+  <section class="panel"><h2>สรุปรายเดือนและยอดสะสม (รวมทั้งหมด)</h2><p class="sub">คอลัมน์พื้นสีฟ้า = ยอดสะสม YTD · Workload Required FTE = Weighted Workload ÷ (140 × จำนวนเดือน) · ชม.บริการจริงแสดงเป็นข้อมูลประกอบ</p>
+    <div class="tw"><table><thead><tr><th>เดือน</th><th class="n">Cases</th><th class="n">Weighted<br>Workload</th><th class="n">Nursing<br>Hours</th><th class="n">Prod %<br>ในเวลา</th><th class="n">Prod %<br>นอกเวลา</th><th class="n">Prod %<br>รวม</th><th class="n">ชม.บริการ<br>จริง</th><th class="n">Workload<br>Req FTE</th><th class="n">Actual<br>FTE</th><th class="n">FTE<br>Gap</th>
+      <th class="n col-sum">YTD<br>Cases</th><th class="n col-sum">YTD<br>Workload</th><th class="n col-sum">YTD<br>NH</th><th class="n col-sum">YTD<br>Prod %</th><th class="n col-sum">YTD Req<br>FTE</th><th class="n col-sum">YTD Act<br>FTE</th><th class="n col-sum">YTD<br>Gap</th></tr></thead>
+    <tbody>${body}<tr class="em"><td>ทั้งปี</td><td class="n">${fmt0(yr.M.TOTAL.cases)}</td><td class="n">${fmt(yr.M.TOTAL.ww)}</td><td class="n">${fmt0(yr.M.TOTAL.nh)}</td>${pc(yr.M.INTIME.prod)}${pc(yr.M.OUT.prod)}${pc(yr.M.TOTAL.prod)}<td class="n">${fmt(yr.M.TOTAL.wh)}</td><td class="n">${fmt(annualReq)}</td><td class="n">${fmt(annualAct)}</td><td class="n">${fmt(annualAct-annualReq)}</td><td colspan="7" class="dim" style="white-space:normal">Annual Workload FTE = Weighted Workload ทั้งปี ÷ 1,680 · Actual = Nursing Hours ทั้งปี ÷ 1,680 · เทียบได้เมื่อครบ 12 เดือน (ตอนนี้มีข้อมูล ${lastIdx} เดือน)</td></tr></tbody></table></div></section>`;
+}
+
+function asa(){
+  const p = period(); const opts = {asaRaw: S.asaRaw}; const {a} = compute(p.fy, p.from, p.to, opts);
+  const cols = ['F3','F4','F5','F6','INTIME','OUT','TOTAL'];
+  const cell = (k, v) => `<td class="n ${['INTIME','TOTAL'].includes(k)?'col-sum':''}">${v}</td>`;
+  const row = (s, cls='') => `<tr class="${cls}"><td class="lbl">${s}</td>${cols.map((k) => cell(k, fmt0(a.G[k].asa[s]||0))).join('')}</tr>`;
+  const assessed = (g) => E.ASA.reduce((s,x) => s + (g.asa[x]||0), 0);
+  const hi = (g) => ['ASA 3','ASA 4','ASA 5','ASA 6','ASA 3E','ASA 4E','ASA 5E','ASA 6E'].reduce((s,x) => s + (g.asa[x]||0), 0);
+  const em = (g) => E.ASA.filter((x) => x.endsWith('E')).reduce((s,x) => s + (g.asa[x]||0), 0);
+  const pct = (n, d) => d ? fmt(n/d*100,1)+'%' : 'N/A';
+  return `<section class="panel"><h2>ASA Classification · ${esc(periodText(p))}</h2>
+  <p class="sub">ฐานเดียวกับ Productivity · ในเวลา/นอกเวลา มาจากเวลาเริ่มเคส ส่วนตัว E ของ ASA หมายถึง Emergency ตามการประเมินทางคลินิก ไม่เกี่ยวกับนอกเวลา</p>
+  <div class="actions" style="margin-bottom:12px"><label class="toggle"><input type="checkbox" id="asaRaw" ${S.asaRaw?'checked':''}> แสดงตามต้นฉบับ (ASA ว่าง = Missing ASA)</label><span class="note">ค่าเริ่มต้น: ASA ว่าง ในเวลา = ASA 1 · นอกเวลา = ASA 1E ตามกติกากลุ่มงาน</span></div>
+  ${S.asaRaw ? '' : '<div class="callout info" style="margin-bottom:12px">ASA ว่างถูกใส่ค่าตามกติกากลุ่มงาน (ในเวลา = ASA 1 · นอกเวลา = ASA 1E) เพื่อการสรุปภาระงาน · ติ๊กด้านบนเพื่อดูตามต้นฉบับ</div>'}
+  <div class="tw"><table><thead><tr><th>ASA</th>${cols.map((k) => `<th class="n ${['INTIME','TOTAL'].includes(k)?'col-sum':''}"><span class="dot" style="--c:${COLOR[k]}"></span>${LABEL[k]}</th>`).join('')}</tr></thead>
+  <tbody>${E.ASA.map((x) => row(x)).join('')}
+  <tr class="em"><td>${S.asaRaw?'ASA ที่ประเมินจริง':'รวม ASA 1–6E'}</td>${cols.map((k) => cell(k, fmt0(assessed(a.G[k])))).join('')}</tr>
+  ${row(E.MISSING)}${row(E.OTHER_ASA)}
+  <tr class="em"><td>รวมเคส</td>${cols.map((k) => cell(k, fmt0(a.G[k].cases))).join('')}</tr>
+  <tr><td class="lbl">ASA 3 ขึ้นไป (รวม 3E–6E)</td>${cols.map((k) => cell(k, fmt0(hi(a.G[k])))).join('')}</tr>
+  <tr><td class="lbl">% ASA 3 ขึ้นไป</td>${cols.map((k) => cell(k, pct(hi(a.G[k]), assessed(a.G[k])))).join('')}</tr>
+  <tr><td class="lbl">% Emergency (E)</td>${cols.map((k) => cell(k, pct(em(a.G[k]), assessed(a.G[k])))).join('')}</tr>
+  </tbody></table></div></section>`;
+}
+
+/* ---------- staffing (coverage-based, separate from workload FTE) ---------- */
+const STAFF_KEYS = ['F3','F4','F5','F6','OUT'];
+const STAFF_FIELDS = [['rooms','ห้องที่เปิดจริง'],['perRoom','พยาบาล/ห้อง'],['pacu','PACU'],['floatPlan','Float ตามแผน'],['floatActual','Float จัดได้จริง'],['hoursPerDay','ชม.เปิดบริการ/วัน'],['days','จำนวนวัน'],['actualHours','ชม.ปฏิบัติงานจริง (ถ้ามี)']];
+function staffCfg(){
+  const d = S.config.staffing || {};
+  const def = {F4:{rooms:4, perRoom:1, pacu:2, floatPlan:2, floatActual:1, hoursPerDay:8}};
+  const o = {}; STAFF_KEYS.forEach((k) => o[k] = {...(def[k]||{}), ...(d[k]||{})}); return o;
+}
+function staffing(){
+  const p = period(); const hol = holSet(); let wd = 0, cd = 0;
+  for (let i = p.from; i <= p.to; i++){ const w = E.workdays(p.fy, i, hol); wd += w.workdays; cd += w.days; }
+  const cfg = staffCfg(); const {M} = compute(p.fy, p.from, p.to);
+  const rowsIn = STAFF_KEYS.map((k) => { const c = {...cfg[k]}; if (!(c.days > 0)) c.days = k === 'OUT' ? cd : wd; return [k, c, E.coverage(c, p.months)]; });
+  const configured = (c) => (c.rooms||0) + (c.pacu||0) + (c.floatPlan||0) > 0;
+  const inputs = rowsIn.map(([k, c]) => `<tr><td class="lbl"><span class="dot" style="--c:${COLOR[k]}"></span> ${k==='OUT'?'นอกเวลา (ทุกชั้น)':LABEL[k]}</td>${STAFF_FIELDS.map(([f]) => `<td class="n"><input class="cell" id="st-${k}-${f}" data-sk="${k}" data-sf="${f}" inputmode="decimal" value="${cfg[k][f] ?? ''}" placeholder="${f==='days'?(k==='OUT'?cd:wd):''}" ${S.canEdit?'':'disabled'}></td>`).join('')}</tr>`).join('');
+  const res = rowsIn.map(([k, c, r]) => configured(c) ? `<tr><td class="lbl"><span class="dot" style="--c:${COLOR[k]}"></span> ${k==='OUT'?'นอกเวลา (ทุกชั้น)':LABEL[k]}</td><td class="n">${fmt0(c.rooms)}</td><td class="n">${fmt0(r.perShiftPlan)}</td><td class="n">${fmt0(r.perShiftActual)}</td><td class="n" style="color:${r.floatShort?'var(--bad)':'inherit'}">${fmt0(r.floatShort)}</td>
+      <td class="n">${fmt(r.reqFte)}</td><td class="n">${fmt(r.actFte)}</td><td class="n" style="color:${r.gap<0?'var(--bad)':'var(--good)'}">${fmt(r.gap)}</td><td class="n">${r.floatCov==null?'N/A':fmt(r.floatCov,0)+'%'}</td>
+      <td>${r.simulated?'<span class="chip wait">จำลองตามแผน</span>':'<span class="chip good">ชั่วโมงจริง</span>'}</td><td class="n dim">${k==='OUT'?fmt(M.OUT.req):fmt(M[k].req)}</td></tr>`
+    : `<tr><td class="lbl"><span class="dot" style="--c:${COLOR[k]}"></span> ${k==='OUT'?'นอกเวลา (ทุกชั้น)':LABEL[k]}</td><td colspan="9" class="dim">ยังไม่ได้ตั้งค่า</td><td class="n dim">${k==='OUT'?fmt(M.OUT.req):fmt(M[k].req)}</td></tr>`).join('');
+  return `<div class="callout info">การวิเคราะห์นี้คิดจาก<b>แผนการเปิดบริการ</b> (ห้อง × คน × ชั่วโมง) แยกจาก Workload FTE ที่คิดจากภาระงานผู้ป่วย ห้ามนำสองค่ามาบวกกันเพราะจะนับซ้ำ</div>
+  <section class="panel"><h2>ตั้งค่าการจัดกำลังคนต่อช่วงเวร · ${esc(periodText(p))}</h2>
+    <p class="sub">ค่าเริ่มต้นชั้น 4 เป็นตัวอย่างจากคำสั่งงาน (4 ห้อง · 4 คน · PACU 2 · Float แผน 2 / จัดได้ 1) · จำนวนวันว่าง = ใช้วันทำการ ${wd} วัน (นอกเวลาใช้ ${cd} วันตามปฏิทิน)</p>
+    <div class="tw"><table><thead><tr><th>กลุ่ม</th>${STAFF_FIELDS.map(([,l]) => `<th class="n">${l}</th>`).join('')}</tr></thead><tbody>${inputs}</tbody></table></div>
+    ${S.canEdit?'<div class="actions" style="margin-top:12px"><button class="btn primary" id="saveStaff">บันทึกการตั้งค่า</button><span class="note">เว้น “ชม.ปฏิบัติงานจริง” ไว้ ระบบจะแสดงเป็นผลจำลองตามแผน</span></div>':''}</section>
+  <section class="panel"><h2>ผลวิเคราะห์ Coverage</h2>
+    <p class="sub">Coverage Required FTE = ชม.กำลังคนตามแผน ÷ (140 × ${p.months} เดือน) · Coverage Actual FTE = ชม.ที่จัดได้จริง ÷ ฐานเดียวกัน · Float Coverage = ชม.Float จัดได้ ÷ ชม.Float ตามแผน × 100</p>
+    <div class="tw"><table><thead><tr><th>กลุ่ม</th><th class="n">ห้องเปิด</th><th class="n">คน/เวร<br>ตามแผน</th><th class="n">คน/เวร<br>จัดได้</th><th class="n">ขาด Float<br>คน/เวร</th><th class="n">Coverage<br>Required FTE</th><th class="n">Coverage<br>Actual FTE</th><th class="n">Coverage<br>Gap</th><th class="n">Float<br>Coverage</th><th>สถานะข้อมูล</th><th class="n dim">อ้างอิง: Workload<br>Req FTE (ไม่บวกรวม)</th></tr></thead><tbody>${res}</tbody></table></div>
+    <details style="margin-top:10px"><summary>วิธีคิด</summary><p class="note">คน/เวรตามแผน = ห้อง × พยาบาล/ห้อง + PACU + Float ตามแผน · คน/เวรที่จัดได้ ใช้ Float ที่จัดได้จริง · ชั่วโมงกำลังคน = คน/เวร × ชม.เปิดบริการ/วัน × จำนวนวัน · ถ้ากรอกชั่วโมงปฏิบัติงานจริง ระบบใช้ค่านั้นแทนผลจำลอง</p></details></section>`;
+}
+async function saveStaffing(){
+  const o = {}; let bad = false;
+  STAFF_KEYS.forEach((k) => { o[k] = {}; STAFF_FIELDS.forEach(([f]) => { const v = $(`#st-${k}-${f}`).value.trim(); if (v === '') return; const n = Number(v); if (!isFinite(n) || n < 0) bad = true; else o[k][f] = n; }); });
+  if (bad){ toast('กรอกเป็นตัวเลข 0 ขึ้นไป'); return; }
+  await saveConfig({staffing:o}, 'ตั้งค่ากำลังคนตามแผน');
+}
+
+/* ---------- report ---------- */
+function report(){
+  const p = period(); const {a, M} = compute(p.fy, p.from, p.to); const hol = holSet();
+  const groups = ['F3','F4','F5','F6','INTIME','OUT','TOTAL'];
+  const ftRows = groups.map((k) => { const m = M[k]; const oldReq = m.serviceFte, oldGap = m.act==null?null:m.act-oldReq, oldUtil = m.act?oldReq/m.act*100:null;
+    return `<tr class="${k==='TOTAL'?'em':''}"><td class="lbl">${LABEL[k]}</td><td class="n">${fmt(oldReq)}</td><td class="n">${fmt(oldGap)}</td><td class="n">${fmt(oldUtil)}</td><td class="n col-sum">${fmt(m.req)}</td><td class="n col-sum">${fmt(m.gap)}</td><td class="n col-sum">${fmt(m.util)}</td><td class="n">${fmt(m.prod)}</td><td>${m.util!=null && Math.abs(m.util-m.prod)<1e-6?'<span class="chip good">เท่ากัน</span>':'<span class="chip wait">N/A</span>'}</td></tr>`; }).join('');
+  const au = S.mode === 'month' ? E.audit(S.allRows, hol, p.fy, p.to) : null;
+  const t = (x) => x == null ? '—' : `${pad(Math.floor(x/60))}:${pad(x%60)}`;
+  const list = (arr, extra) => arr.length ? `<div class="tw"><table><thead><tr><th class="n">แถวต้นทาง</th><th>วันที่</th><th>เวลาเริ่ม</th><th>ห้อง</th><th class="n">ane_tm</th><th>ASA</th><th>${extra[0]}</th></tr></thead><tbody>${arr.map((r) => `<tr><td class="n">${r.row ?? 'ไม่มีเลขแถว'}</td><td>${r.date}</td><td class="num">${t(r.time)}</td><td>${esc(r.room)}</td><td class="n">${r.ane ?? 'ว่าง'}</td><td>${esc(r.asa || '—')}</td><td>${extra[1](r)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="note">ไม่มี</p>';
+  const up = S.uploads[keyOf(p.fy, p.to)];
+  const tr = S.testResults;
+  return `
+  <section class="panel"><h2>1. สูตรปัจจุบันและข้อค้นพบ</h2><div class="tw"><table><thead><tr><th>ตัวชี้วัด</th><th>สูตรที่ใช้</th><th>ข้อค้นพบ</th></tr></thead><tbody>
+    <tr><td class="lbl">เคส</td><td style="white-space:normal">ane_tm &gt; 0 นับ 1 ราย</td><td style="white-space:normal">ถูกต้อง · ปรับให้แยกเหตุผล ane_tm = 0 / ว่าง / ไม่ใช่ตัวเลข และเก็บเลขแถวต้นทาง</td></tr>
+    <tr><td class="lbl">Total Time / Level</td><td style="white-space:normal">Pre-op 30 + ane_tm + PACU (ว่าง = 0) → Level 1–4</td><td style="white-space:normal">ถูกต้อง ไม่เปลี่ยน</td></tr>
+    <tr><td class="lbl">Weighted Workload</td><td style="white-space:normal">Σ เคสแต่ละ Level × 2.58 / 4.75 / 7.08 / 9.25</td><td style="white-space:normal">ถูกต้อง ไม่เปลี่ยน · หน่วยเป็นชั่วโมงการพยาบาลมาตรฐาน (ดูข้อ 5)</td></tr>
+    <tr><td class="lbl">Productivity</td><td style="white-space:normal">Weighted Workload ÷ Nursing Hours × 100</td><td style="white-space:normal">ถูกต้อง ไม่หาร 7 · NH = 0 แสดง N/A</td></tr>
+    <tr><td class="lbl">Required FTE (เดิม)</td><td style="white-space:normal">ชม.บริการจริง (Σ Total Time ÷ 60) ÷ 140</td><td style="white-space:normal"><b>ไม่สอดคล้อง</b> กับ Productivity เพราะใช้ชั่วโมงที่ยังไม่ถ่วงน้ำหนัก · เดือน ต.ค. ได้ Gap +15.47 FTE (เกิน) ทั้งที่ Productivity 140.61%</td></tr>
+    <tr><td class="lbl">ASA ว่าง</td><td style="white-space:normal">ในเวลา → ASA 1 · นอกเวลา → ASA 1E</td><td style="white-space:normal">ใช้ตามกติกากลุ่มงาน · นับจำนวนที่ถูกใส่ค่าแยกไว้ในรายงาน และดูแบบต้นฉบับ (Missing ASA) ได้ที่หน้า ASA</td></tr>
+    </tbody></table></div></section>
+
+  <section class="panel"><h2>2. เปรียบเทียบสูตร FTE เดิมและใหม่ · ${esc(periodText(p))}</h2>
+    <p class="sub">เดิม Required = ชม.บริการจริง ÷ 140 · ใหม่ Workload Required FTE = Weighted Workload ÷ 140 · Actual FTE = Nursing Hours ÷ 140 (เท่ากันทั้งสองแบบ)</p>
+    <div class="tw"><table><thead><tr><th>กลุ่ม</th><th class="n">เดิม<br>Required FTE</th><th class="n">เดิม<br>Gap</th><th class="n">เดิม<br>Utilization %</th><th class="n col-sum">ใหม่ Workload<br>Required FTE</th><th class="n col-sum">ใหม่<br>Gap</th><th class="n col-sum">ใหม่<br>Utilization %</th><th class="n">Productivity %</th><th>Utilization = Productivity</th></tr></thead><tbody>${ftRows}</tbody></table></div>
+    <p class="note" style="margin:10px 0 0">จำนวนเคสและ Weighted Workload ไม่เปลี่ยนจากการแก้สูตร FTE (ตรวจด้วย Automated Test)</p></section>
+
+  <section class="panel"><h2>3. รายงานตรวจสอบข้อมูล ${S.mode==='month'?esc(monthLabel(p.fy,p.to)):''}</h2>
+  ${au ? `<dl class="kv">
+    <dt>ไฟล์ต้นฉบับ</dt><dd>${up?esc(up.fileName):'—'} · ${up?fmt0(up.rowCount):'—'} แถวข้อมูล (ไม่รวมหัวตารางแถวที่ 1) · แถวสุดท้ายในชีท = ${up?fmt0(up.rowCount+1):'—'}</dd>
+    <dt>แถวที่เป็นเดือนนี้ตามวันที่ให้บริการ</dt><dd class="num">${fmt0(au.counted + au.excluded.length)}</dd>
+    <dt>เคสที่นับ (ane_tm &gt; 0)</dt><dd><b class="num">${fmt0(au.counted)}</b> ${au.counted===M.TOTAL.cases?'<span class="chip good">ตรงกับ Dashboard</span>':'<span class="chip bad">ไม่ตรง</span>'}</dd>
+    <dt>ไม่ผ่านเกณฑ์</dt><dd class="num">${fmt0(au.excluded.length)}</dd>
+    <dt>วันที่ให้บริการเป็นเดือนอื่น</dt><dd class="num">${fmt0(au.movedOut.length)}</dd>
+    <dt>มาจากไฟล์ของเดือนอื่น</dt><dd class="num">${fmt0(au.movedIn.length)}</dd>
+    <dt>เวรดึกวันสุดท้าย เริ่มหลังเที่ยงคืน (นับรวมแล้ว)</dt><dd class="num">${fmt0(au.nightLast.length)}</dd></dl>
+    <h3 class="h3">ไม่ผ่านเกณฑ์ ane_tm</h3>${list(au.excluded, ['เหตุผล', (r) => esc(r.reason)])}
+    <h3 class="h3">นับเป็นเดือนอื่น (ไม่หาย)</h3>${list(au.movedOut, ['ไปอยู่เดือน', (r) => `${monthLabel(r.to.fy, r.to.fidx)} · ${esc(r.reason)}`])}
+    <h3 class="h3">เวรดึกวันสุดท้ายของเดือน เริ่มหลังเที่ยงคืน (นับรวมเดือนนี้)</h3>${list(au.nightLast, ['วันที่ให้บริการ', () => 'วันสุดท้ายของเดือน (ตามคอลัมน์ date)'])}
+    <h3 class="h3">ห้องนอก OR 1–16 → ชั้น 4 (นับแล้ว)</h3>${list(au.otherRoom, ['ในเวลา/นอกเวลา', (r) => r.inTime?'ในเวลา':'นอกเวลา'])}
+    <h3 class="h3">ASA ว่าง → ใส่ค่าตามกติกา (นับแล้ว)</h3>${list(au.asaMissing, ['ใส่เป็น', (r) => r.inTime?'ASA 1 (ในเวลา)':'ASA 1E (นอกเวลา)'])}
+    ${au.noTime.length ? `<h3 class="h3">ไม่มีเวลาเริ่มเคส (นับเป็นนอกเวลา)</h3>${list(au.noTime, ['', () => ''])}` : ''}` : '<p class="note">เลือกโหมดรายเดือนเพื่อดูรายงานรายแถว</p>'}</section>
+
+  <section class="panel"><h2>4. คำอธิบายสูตรสำหรับหัวหน้างานและทีมบริหาร</h2><dl class="kv">
+    <dt>Productivity</dt><dd>ภาระงานมาตรฐานที่เกิดขึ้น เทียบกับชั่วโมงพยาบาลที่ลงปฏิบัติจริง · ${S.config.low}–${S.config.high}% = อยู่ในเกณฑ์ · เกิน ${S.config.high}% = งานมากกว่ากำลังคน</dd>
+    <dt>Workload Required FTE</dt><dd>จำนวนพยาบาลเต็มเวลาที่ต้องมีเพื่อรองรับภาระงานมาตรฐาน (Weighted Workload ÷ 140 ชม./เดือน)</dd>
+    <dt>Actual FTE</dt><dd>จำนวนพยาบาลเต็มเวลาเทียบเท่าที่ลงปฏิบัติจริง (Nursing Hours ÷ 140)</dd>
+    <dt>Workload FTE Gap</dt><dd>Actual − Required · ติดลบ = กำลังคนไม่พอกับภาระงาน · เป็นภาพเดียวกับ Productivity (Required ÷ Actual × 100 = Productivity)</dd>
+    <dt>Coverage FTE</dt><dd>กำลังคนที่ต้องจัดตามแผนเปิดห้อง (ห้อง × คน × ชั่วโมง) ใช้ตอบคำถามว่าจัดเวรครบตามแผนหรือไม่ · เป็นอีกมุมมองหนึ่ง ห้ามบวกกับ Workload FTE</dd></dl></section>
+
+  <section class="panel"><h2>5. รายการที่แก้ไข และรายการที่ต้องยืนยัน</h2>
+    <h3 class="h3">แก้ไขแล้ว (Preview)</h3><ol class="rules">
+      <li>Workload Required FTE = Weighted Workload ÷ 140 · Utilization = Productivity · ชม.บริการจริงเก็บเป็นข้อมูลประกอบ</li>
+      <li>ASA ว่าง → ASA 1 (ในเวลา) / ASA 1E (นอกเวลา) ตามกติกากลุ่มงาน · ดูแบบต้นฉบับ (Missing ASA) ได้ที่หน้า ASA</li>
+      <li>ห้องนอก OR 1–16 (RR, หอผู้ป่วย, Scope, รับ Set) จัดเข้าชั้น 4 แล้วตัดในเวลา/นอกเวลาตามเวลาเริ่มเคส</li>
+      <li>เพิ่มหน้า “กำลังคน” (Coverage-based Staffing) แยกจาก Workload FTE · แสดง “จำลองตามแผน” จนกว่าจะกรอกชั่วโมงจริง</li>
+      <li>Dashboard หลัก 6 ตัวชี้วัด พร้อมปุ่มดูสูตร · ไม่แสดง Utilization ซ้ำ · NH = 0 แสดง N/A</li>
+      <li>รายงานตรวจสอบพร้อมเลขแถวต้นทาง · แยกเหตุผล ane_tm = 0 / ว่าง / ไม่ใช่ตัวเลข</li></ol>
+    <h3 class="h3">ต้องยืนยัน</h3><ol class="rules">
+      <li><b>Weight 2.58 / 4.75 / 7.08 / 9.25 เป็นชั่วโมงการพยาบาลมาตรฐานต่อราย</b> ตามเกณฑ์กลุ่มการพยาบาลหรือไม่ · หลักฐาน: สูตรเดิมของระบบคือ Workload ÷ (Nursing Hours × 7) ซึ่งเป็นการเทียบชั่วโมงกับชั่วโมง และ weight แต่ละ level ≈ 1.7–2.0 เท่าของเวลาบริการ (สอดคล้องกับชั่วโมงพยาบาลหลายคนต่อราย) · ถ้าเป็น “คะแนน” ไม่ใช่ชั่วโมง ต้องกลับไปใช้สูตรเดิม</li>
+      <li>Nursing Hours ต.ค. นอกเวลา 1,848 ชม. เป็นชั่วโมงทุกชั้นรวมกันหรือไม่</li>
+      <li>ค่าตั้งต้นกำลังคนของชั้น 3, 5, 6 และเวรนอกเวลา · ชั่วโมงเปิดบริการต่อวัน</li>
+            <li>ไฟล์ Excel v4 ยังจัดห้องนอก OR เข้าชั้น 5 ใช้กติกาเวรดึกแบบเดิม (ต.ค. = 1,414) และสูตร FTE เดิม · ต้องปรับให้ตรงกับเว็บแอป</li></ol></section>
+
+  <section class="panel"><h2>6. ผลทดสอบอัตโนมัติ</h2><p class="sub">${tr ? `รันด้วย Node.js กับข้อมูล ต.ค. 2569 · ${tr.pass} ผ่าน · ${tr.fail} ไม่ผ่าน` : 'ไม่มีผลทดสอบ'}</p>
+    ${tr ? `<div class="tw"><table><tbody>${tr.log.map((l) => `<tr><td>${l.startsWith('PASS')?'<span class="chip good">PASS</span>':'<span class="chip bad">FAIL</span>'}</td><td style="white-space:normal">${esc(l.slice(6))}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    <h3 class="h3">ตรวจสดกับข้อมูลที่แสดงอยู่</h3><ul class="rules">
+      <li>Required ÷ Actual × 100 = Productivity (รวมทั้งหมด): ${M.TOTAL.util==null?'N/A':(Math.abs(M.TOTAL.util-M.TOTAL.prod)<1e-6?'✓ ผ่าน':'✗ ไม่ผ่าน')}</li>
+      <li>ชั้น 3–6 ในเวลา + นอกเวลา = รวมทั้งหมด: ${E.FLOORS.reduce((s,k)=>s+a.G[k].cases,0)+a.G.OUT.cases===a.G.TOTAL.cases?'✓ ผ่าน':'✗ ไม่ผ่าน'}</li></ul></section>`;
+}
+
+/* ---------- upload ---------- */
+function upload(){
+  const list = Object.values(S.uploads).sort((a,b) => a.key < b.key ? 1 : -1);
+  const pend = S.pending;
+  let preview = '';
+  if (pend && pend.error) preview = `<div class="callout bad">${esc(pend.error)}</div>`;
+  else if (pend){
+    const ag = E.aggregate(pend.rows, holSet(), pend.fy, pend.fidx, pend.fidx);
+    const exists = S.uploads[pend.key];
+    const other = Object.entries(pend.byMonth).filter(([k]) => k !== pend.key).map(([k,c]) => `${monthLabel(+k.slice(0,4), +k.slice(5))} ${c} แถว`).join(', ');
+    preview = `<section class="panel"><h2>ตรวจสอบก่อนบันทึก</h2>
+      <div class="callout good" style="margin-bottom:12px">ตัด HN, AN และชื่อผู้ป่วยออกแล้วในเครื่องนี้ ข้อมูลส่วนนี้ไม่ถูกส่งขึ้นระบบ</div>
+      <dl class="kv"><dt>ไฟล์</dt><dd>${esc(pend.fileName)}</dd><dt>เดือนของไฟล์</dt><dd><b>${monthLabel(pend.fy, pend.fidx)}</b> (ปีงบ ${pend.fy})</dd>
+      <dt>จำนวนแถว</dt><dd class="num">${fmt0(pend.rows.length)}</dd>
+      ${other?`<dt>แถวที่เป็นเดือนอื่น</dt><dd>${esc(other)} <span class="dim">(นับเข้าเดือนนั้นตามวันที่ให้บริการ · เวรดึกถึง 08:30 นับเป็นวันก่อนหน้า)</span></dd>`:''}
+      <dt>เคสที่นับ</dt><dd><span class="num">${fmt0(ag.G.TOTAL.cases)}</span> <span class="dim">(ในเวลา ${fmt0(ag.G.INTIME.cases)} · นอกเวลา ${fmt0(ag.G.OUT.cases)})</span></dd>
+      <dt>ไม่นับ (ane_tm = 0 / ว่าง / ไม่ใช่ตัวเลข)</dt><dd class="num">${fmt0(ag.ex.aneZero + ag.ex.aneBlank + ag.ex.aneInvalid)}</dd><dt>ห้องนอก OR → ชั้น 4</dt><dd class="num">${fmt0(ag.ex.other.in + ag.ex.other.out)}</dd><dt>Missing ASA</dt><dd class="num">${fmt0(ag.ex.asaMissing.in + ag.ex.asaMissing.out)}</dd></dl>
+      ${exists ? `<div class="callout warn" style="margin-top:12px">มีข้อมูล${monthLabel(pend.fy,pend.fidx)}อยู่แล้ว (${esc(exists.fileName)}) การบันทึกจะแทนที่ข้อมูลเดิม ไม่นับซ้ำ</div>` : ''}
+      <div class="actions" style="margin-top:14px"><button class="btn primary" id="saveUp">${exists?'แทนที่ข้อมูลเดิม':'บันทึกเข้าระบบ'}</button><button class="btn" id="cancelUp">ยกเลิก</button></div></section>`;
+  }
+  const rowsHtml = list.length ? list.map((u) => `<tr><td class="lbl">${monthLabel(u.fy,u.fidx)}</td><td>${esc(u.fileName)}</td><td class="n">${fmt0(u.rowCount)}</td><td class="dim">${new Date(u.uploadedAt).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}</td>
+    <td>${S.canEdit ? (S.confirmDel===u.key ? `<span class="actions"><button class="btn danger" data-del="${u.key}">ยืนยันลบ</button><button class="btn" data-nodel>ไม่ลบ</button></span>` : `<button class="btn danger" data-askdel="${u.key}">ลบ</button>`) : ''}</td></tr>`).join('')
+    : `<tr><td colspan="5" class="empty">ยังไม่มีไฟล์ในระบบ</td></tr>`;
+  return `
+  ${S.canEdit ? `<section class="panel"><h2>นำเข้าไฟล์สถิติดมยา</h2><p class="sub">ไฟล์ .xls / .xlsx ที่ Export จากระบบ ใช้ได้ทั้งไฟล์ ไม่ต้องตัดคอลัมน์ · 1 ไฟล์ต่อ 1 เดือน</p>
+    <label class="drop" id="drop" for="file"><strong>ลากไฟล์มาวาง หรือคลิกเพื่อเลือกไฟล์</strong><span class="note">ระบบอ่านไฟล์ในเครื่องนี้ ตัด HN / AN / ชื่อผู้ป่วยทิ้งก่อนบันทึก และอ่านคอลัมน์ตามชื่อหัวตาราง</span>
+    <input type="file" id="file" accept=".xls,.xlsx" hidden></label></section>` : `<div class="callout info">คุณดูข้อมูลได้อย่างเดียว การนำเข้าไฟล์ทำได้เฉพาะผู้ดูแลระบบ</div>`}
+  ${preview}
+  <section class="panel"><h2>ไฟล์ในระบบ</h2><div class="tw"><table><thead><tr><th>เดือน</th><th>ไฟล์</th><th class="n">แถว</th><th>นำเข้าเมื่อ</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table></div></section>
+  ${auditPanel()}`;
+}
+async function readFile(file){
+  try {
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array', cellDates:false, codepage:874});
+    let parsed = null;
+    for (const n of wb.SheetNames){
+      const aoa = XLSX.utils.sheet_to_json(wb.Sheets[n], {header:1, raw:true, defval:null});
+      const p = E.parseSheet(aoa); if (!p.error){ parsed = p; break; } parsed = parsed || p;
+    }
+    if (parsed.error){ S.pending = {error: parsed.error + ' — ตรวจว่าเป็นไฟล์สถิติดมยาจากระบบ'}; render(); return; }
+    const byMonth = {};
+    parsed.rows.forEach((r) => { const f = E.fiscalOf(r); if (f){ const k = keyOf(f.fy,f.fidx); byMonth[k] = (byMonth[k]||0) + 1; } });
+    const main = Object.entries(byMonth).sort((a,b) => b[1]-a[1])[0];
+    if (!main){ S.pending = {error:'อ่านเดือน/ปีของข้อมูลไม่ได้ (คอลัมน์ month, year)'}; render(); return; }
+    const [key] = main;
+    S.pending = {fileName: file.name, rows: parsed.rows, byMonth, key, fy: +key.slice(0,4), fidx: +key.slice(5)};
+    S.fy = S.pending.fy; S.fidx = S.pending.fidx;
+    render();
+  } catch (e){ S.pending = {error:'เปิดไฟล์ไม่ได้: ' + (e.message || e)}; render(); }
+}
+async function saveUpload(){
+  const p = S.pending; if (!p || !S.db) return;
+  const btn = $('#saveUp'); btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+  try {
+    const CH = 700, parts = Math.ceil(p.rows.length / CH);
+    const old = S.uploads[p.key];
+    for (let i = 0; i < parts; i++) await S.db.doc(`rows/${p.key}-p${i}`).set({key:p.key, part:i, rows:JSON.stringify(p.rows.slice(i*CH, (i+1)*CH))});
+    if (old) for (let i = parts; i < (old.parts||0); i++) await S.db.doc(`rows/${p.key}-p${i}`).delete();
+    await S.db.doc(`uploads/${p.key}`).set({key:p.key, fy:p.fy, fidx:p.fidx, fileName:p.fileName, rowCount:p.rows.length, parts, byMonth:p.byMonth, uploadedAt:new Date().toISOString(), uploadedBy:S.myId});
+    await log(old ? 'แทนที่ไฟล์' : 'นำเข้าไฟล์', `${monthLabel(p.fy,p.fidx)} · ${p.fileName} · ${p.rows.length} แถว`);
+    S.pending = null; toast('บันทึกแล้ว ระบบคำนวณใหม่ให้ทุกหน้า'); location.hash = '#overview';
+  } catch (e){ btn.disabled = false; btn.textContent = 'ลองบันทึกอีกครั้ง'; toast(e.code === 'quota_exceeded' ? 'พื้นที่ฐานข้อมูลเต็ม' : 'บันทึกไม่สำเร็จ: ' + (e.message||e.code)); }
+}
+async function deleteUpload(key){
+  const u = S.uploads[key]; if (!u) return;
+  try { for (let i = 0; i < (u.parts||1); i++) await S.db.doc(`rows/${key}-p${i}`).delete();
+    await S.db.doc(`uploads/${key}`).delete(); await log('ลบไฟล์', `${monthLabel(u.fy,u.fidx)} · ${u.fileName}`); S.confirmDel = null; toast('ลบแล้ว'); }
+  catch (e){ toast('ลบไม่สำเร็จ'); }
+}
+
+/* ---------- nursing hours ---------- */
+function hours(){
+  const fy = S.hoursFy || S.fy;
+  const head = `<tr><th>เดือน</th>${E.FLOORS.map((k) => `<th class="n"><span class="dot" style="--c:${COLOR[k]}"></span>${LABEL[k]}<br><span class="dim">ในเวลา</span></th>`).join('')}<th class="n"><span class="dot" style="--c:var(--out)"></span>นอกเวลา<br><span class="dim">รวมทุกชั้น</span></th><th class="n col-sum">รวมในเวลา</th><th class="n col-sum">รวมทั้งหมด</th><th>สถานะ</th><th></th></tr>`;
+  const body = [];
+  for (let i = 1; i <= 12; i++){
+    const k = keyOf(fy, i), d = S.nh[k] || {};
+    const ag = E.aggregate(S.allRows, holSet(), fy, i, i);
+    const hasData = ag.G.TOTAL.cases > 0;
+    const filled = NHKEYS.some((x) => d[x] > 0);
+    const st = !hasData && !filled ? '<span class="dim">—</span>' : !hasData ? '<span class="chip wait">รอไฟล์สถิติ</span>' : !filled ? '<span class="chip warn">รอกรอกชั่วโมง</span>'
+      : (ag.G.OUT.cases && !(d.OUT > 0)) ? '<span class="chip warn">ขาดนอกเวลา</span>' : '<span class="chip good">สมบูรณ์</span>';
+    const inp = (x) => `<td class="n"><input class="cell" id="nh-${k}-${x}" data-k="${k}" data-f="${x}" inputmode="decimal" value="${d[x] ?? ''}" ${S.canEdit?'':'disabled'} aria-label="${LABEL[x]} ${E.MONTHS[i-1]}"></td>`;
+    const it = E.FLOORS.reduce((s,x) => s + (+d[x]||0), 0);
+    body.push(`<tr><td class="lbl">${monthLabel(fy, i)}</td>${NHKEYS.map(inp).join('')}<td class="n col-sum">${it?fmt0(it):'—'}</td><td class="n col-sum">${it+(+d.OUT||0)?fmt0(it+(+d.OUT||0)):'—'}</td><td>${st}</td>
+      <td>${S.canEdit?`<button class="btn" data-savenh="${k}" disabled>บันทึก</button>`:''}</td></tr>`);
+  }
+  return `<section class="panel"><h2>Nursing Hours ปีงบ ${fy}</h2>
+    <p class="sub">กรอกชั่วโมงรวมทั้งเดือนจากตารางเวร หน่วยเป็นชั่วโมง (ไม่ต้องหาร 7) · ชั้น 3–6 เฉพาะเวรในเวลา · นอกเวลาเป็นยอดเดียวของทีมเวรนอกเวลาทุกชั้น</p>
+    <div class="actions" style="margin-bottom:12px"><label for="hFy">ปีงบ</label><select id="hFy" class="txt">${knownFys().map((y) => `<option ${y===fy?'selected':''}>${y}</option>`).join('')}</select>
+    ${S.canEdit?'':'<span class="note">ดูได้อย่างเดียว</span>'}</div>
+    <div class="tw"><table><thead>${head}</thead><tbody>${body.join('')}</tbody></table></div></section>
+  ${S.canEdit ? `<section class="panel"><h2>ตัวช่วยคำนวณชั่วโมง</h2><p class="sub">คลิกช่องในตารางที่ต้องการก่อน แล้วคำนวณ จำนวนคน × จำนวนวัน × ชั่วโมงต่อเวร</p>
+    <div class="actions"><input class="cell" id="cP" inputmode="decimal" placeholder="คน" aria-label="จำนวนคน"> ×
+    <input class="cell" id="cD" inputmode="decimal" placeholder="วัน" aria-label="จำนวนวัน"> ×
+    <input class="cell" id="cH" inputmode="decimal" placeholder="ชม./เวร" value="7" aria-label="ชั่วโมงต่อเวร"> =
+    <b class="num" id="cR">—</b><button class="btn" id="cAdd">บวกเพิ่มในช่องที่เลือก</button><button class="btn" id="cSet">ใส่แทนค่าในช่องที่เลือก</button>
+    <span class="note" id="cTarget">ยังไม่ได้เลือกช่อง</span></div>
+    <p class="note" style="margin:8px 0 0">ใช้ “บวกเพิ่ม” เมื่อชั้นนั้นมีหลายกลุ่มเวร เช่น หัวหน้าเวร + พยาบาลประจำห้อง</p></section>` : ''}
+  ${auditPanel()}`;
+}
+let nhTarget = null;
+async function saveNh(k){
+  const vals = {}; let bad = false;
+  NHKEYS.forEach((x) => { const v = $(`#nh-${k}-${x}`).value.trim().replace(/,/g,''); if (v === ''){ vals[x] = null; return; } const n = Number(v); if (!isFinite(n) || n < 0) bad = true; vals[x] = n; });
+  if (bad){ toast('กรอกเป็นตัวเลขชั่วโมง 0 ขึ้นไป'); return; }
+  const [fy, fi] = k.split('-').map(Number); const old = S.nh[k] || {};
+  try {
+    await S.db.doc(`nh/${k}`).set({fy, fidx:fi, ...vals, updatedAt:new Date().toISOString(), updatedBy:S.myId});
+    const ch = NHKEYS.filter((x) => (old[x] ?? null) !== vals[x]).map((x) => `${LABEL[x]} ${old[x] ?? '—'}→${vals[x] ?? '—'}`).join(', ');
+    await log('Nursing Hours', `${monthLabel(fy, fi)}: ${ch || 'ไม่เปลี่ยนแปลง'}`); toast('บันทึก Nursing Hours แล้ว');
+  } catch (e){ toast('บันทึกไม่สำเร็จ'); }
+}
+
+/* ---------- holidays ---------- */
+function holidays(){
+  const list = [...(S.config.holidays||[])].sort((a,b) => a.date < b.date ? -1 : 1);
+  const th = (d) => { const [y,m,dd] = d.split('-').map(Number); return new Date(Date.UTC(y,m-1,dd)).toLocaleDateString('th-TH',{weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC'}); };
+  return `<section class="panel"><h2>วันหยุดนักขัตฤกษ์ / วันหยุดราชการ</h2><p class="sub">เสาร์–อาทิตย์ระบบตรวจเอง ไม่ต้องกรอก · แก้ไขแล้วทุกเดือนคำนวณใหม่ทันที (เคสในวันหยุด = นอกเวลาทุกช่วงเวลา)</p>
+    ${S.canEdit ? `<form class="actions" id="holForm" style="margin-bottom:12px"><input type="date" id="hDate" required aria-label="วันที่"><input class="txt" id="hName" placeholder="ชื่อวันหยุด" required aria-label="ชื่อวันหยุด"><button class="btn primary">เพิ่มวันหยุด</button></form>` : ''}
+    <div class="tw"><table><thead><tr><th>วันที่</th><th>ชื่อวันหยุด</th><th></th></tr></thead><tbody>
+    ${list.length ? list.map((h) => `<tr><td class="lbl">${th(h.date)}</td><td>${esc(h.name)}</td><td>${S.canEdit?`<button class="btn danger" data-delhol="${h.date}">ลบ</button>`:''}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">ยังไม่มีวันหยุด</td></tr>'}
+    </tbody></table></div><p class="note" style="margin:10px 0 0">16 ต.ค. 2569 เป็นวันหยุดพิเศษเฉพาะกรุงเทพฯ จึงไม่ได้ใส่ไว้</p></section>`;
+}
+async function saveConfig(patch, what){
+  const next = {...S.config, ...patch};
+  try { await S.db.doc('settings/config').set(next); await log('ตั้งค่า', what); toast('บันทึกแล้ว'); } catch { toast('บันทึกไม่สำเร็จ'); }
+}
+
+function rules(){
+  return `<section class="panel"><h2>กติกาการคำนวณ</h2><p class="sub">ตรงกับไฟล์ Excel FINAL MASTER ปีงบ 2570</p><ol class="rules">
+    <li><b>นับเคส (เกณฑ์หลัก)</b> ทุกแถวที่ ane_tm มากกว่า 0 นับเป็น 1 รายทันที · ane_tm = 0 หรือว่างไม่นับ · Total Time = Pre-op 30 นาที + ane_tm + pacu_tm</li>
+    <li><b>Level</b> 1 ≤ 90 นาที (×2.58) · 2 = 91–150 (×4.75) · 3 = 151–210 (×7.08) · 4 &gt; 210 (×9.25)</li>
+    <li><b>ชั้น</b> ชั้น 3 = OR 1–4 · ชั้น 4 = OR 5–8 · ชั้น 5 = OR 9–12 และห้องสลายนิ่ว · ชั้น 6 = OR 13–16 · ห้องอื่นนอก OR 1–16 (RR, หอผู้ป่วย, Scope, รับ Set ฯลฯ) จัดเข้าชั้น 4 แล้วตัดในเวลา/นอกเวลาตามเวลาเริ่มเคส</li>
+    <li><b>ในเวลา</b> วันทำการ (จันทร์–ศุกร์ ไม่ใช่วันหยุด) และเวลาเริ่มเคส (time1) 08:30–16:30 รวมนาทีที่ 08:30 และ 16:30 · แยกตามชั้น</li>
+    <li><b>นอกเวลา</b> วันทำการที่เริ่มก่อน 08:30 หรือหลัง 16:30 และเสาร์/อาทิตย์/วันหยุดทุกเวลา · รวมทุกชั้นเป็นกลุ่มเดียว</li>
+    <li><b>ใช้เวลาเริ่มเคสเป็นตัวตัด</b> ไม่ใช้เวลาสิ้นสุด · วันที่ใช้วันเริ่มเคส (date1) · ไม่มีเวลาเริ่ม = นอกเวลา</li>
+    <li><b>เดือนของเคส</b> ตามวันที่ให้บริการ (คอลัมน์ date ของไฟล์ Export) · เวรดึกวันสุดท้ายของเดือน 00:00–08:29 แม้วันที่เริ่มจะขึ้นวันที่ 1 ของเดือนถัดไป นับเข้าเดือนเดิม เช่น เริ่ม 1 พ.ย. 00:15 = ต.ค. · เริ่ม 1 พ.ย. 08:30 = พ.ย. · ทุกแถวในไฟล์เดือนใดนับเป็นเดือนนั้น</li>
+    <li><b>ASA ว่าง</b> ในเวลา = ASA 1 · นอกเวลา = ASA 1E (กติกากลุ่มงาน เพื่อสรุปภาระงาน) · ดูตามต้นฉบับได้ที่หน้า ASA</li>
+    <li><b>Productivity</b> = Σ Weighted Workload ÷ Σ Nursing Hours × 100 · ภาพรวมใช้ผลรวมหารผลรวม ไม่เฉลี่ยรายชั้น</li>
+    <li><b>Workload FTE</b> 1 FTE = 1,680 ชม./ปี = 140 ชม./เดือน · Workload Required FTE = Weighted Workload ÷ 140 · Actual = Nursing Hours ÷ 140 · Gap = Actual − Required · Utilization = Productivity</li>
+    <li><b>Coverage FTE</b> คิดจากแผนเปิดห้อง (หน้า กำลังคน) แยกจาก Workload FTE ห้ามบวกรวมกัน</li>
+    <li><b>ข้อมูลส่วนบุคคล</b> ระบบไม่อ่านคอลัมน์ hn, an, pt_name และ code_or · เก็บเฉพาะ วันที่ เวลาเริ่ม ห้อง ane_tm pacu_tm ASA เดือน ปี</li></ol></section>
+  <section class="panel"><h2>เกณฑ์ Productivity</h2><p class="sub">ต่ำกว่า 90% = ต่ำกว่าเกณฑ์ · 90–110% = อยู่ในเกณฑ์ · มากกว่า 110% = สูงกว่าเกณฑ์</p>
+    <form class="actions" id="critForm"><label for="cLow">ต่ำสุด</label><input class="cell" id="cLow" value="${S.config.low}" ${S.canEdit?'':'disabled'}> %
+    <label for="cHigh">สูงสุด</label><input class="cell" id="cHigh" value="${S.config.high}" ${S.canEdit?'':'disabled'}> %
+    ${S.canEdit?'<button class="btn primary">บันทึกเกณฑ์</button>':''}</form></section>`;
+}
+
+function auditPanel(){
+  if (!S.audit.length) return '';
+  return `<section class="panel"><h2>ประวัติการแก้ไขล่าสุด</h2><div class="tw"><table><thead><tr><th>เวลา</th><th>ผู้แก้ไข</th><th>รายการ</th><th>รายละเอียด</th></tr></thead><tbody>
+    ${S.audit.slice(0,15).map((a) => `<tr><td class="dim">${new Date(a.at).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'})}</td><td data-uid="${esc(a.by||'')}">${esc(S.names[a.by] || (a.by?'ผู้ใช้':'ระบบ'))}</td><td>${esc(a.action)}</td><td style="white-space:normal">${esc(a.detail)}</td></tr>`).join('')}
+    </tbody></table></div></section>`;
+}
+S.names = {}; const EMBEDDED_TESTS = {"log": ["PASS  Productivity = Weighted Workload ÷ Nursing Hours × 100 (ทุกกลุ่ม)", "PASS  Workload Required FTE ÷ Actual FTE × 100 = Productivity (ทุกกลุ่ม)  — รวมทั้งหมด 140.813092 = 140.813092", "PASS  เหมือนกันในโหมด YTD (หลายเดือน)", "PASS  ชั้น 3+4+5+6 ในเวลา = รวมในเวลา  — 737 = 737", "PASS  รวมในเวลา + นอกเวลา = รวมทั้งหมด (ไม่นับชั้น 4 ซ้ำ)  — 737 + 679 = 1416", "PASS  นอกเวลาแยกชั้น รวม = นอกเวลา", "PASS  Weighted Workload แยกกลุ่ม รวม = รวมทั้งหมด", "PASS  นับเคสเฉพาะ ane_tm > 0 (ทุกเดือนในไฟล์รวมกัน)  — 1416 = 1416", "PASS  ane_tm = 0 / ว่าง / ไม่ใช่ตัวเลข ไม่นับ", "PASS  ไม่ตัดเคสเพราะห้องหรือ ASA ไม่ระบุ", "PASS  สูตร FTE ใหม่ ไม่เปลี่ยนจำนวนเคส (เทียบสูตรเดิมบนข้อมูลเดียวกัน)  — 1416 = 1416", "PASS  สูตร FTE ใหม่ ไม่เปลี่ยน Weighted Workload", "PASS  สูตรเดิมไม่สอดคล้อง: Utilization เดิม ≠ Productivity  — 62.07 vs 140.81", "PASS  ตรงกับค่าอ้างอิง ต.ค. 69: 1,416 ราย · Workload 8,023.53 · Productivity 140.81%", "PASS  Nursing Hours = 0 → Productivity / Actual FTE / Gap เป็น null (แสดง N/A)", "PASS  ทศนิยม 2 ตำแหน่งใช้แสดงผลเท่านั้น", "PASS  Coverage ตัวอย่างชั้น 4: แผน 8 คน/เวร จัดได้ 7 ขาด Float 1", "PASS  Float Coverage = 50%", "PASS  Coverage FTE แยกจาก Workload FTE (ไม่มีค่า Workload ใน coverage)", "PASS  ASA ว่าง ในเวลา → ASA 1 · นอกเวลา → ASA 1E (กติกากลุ่มงาน)", "PASS  โหมดต้นฉบับ: ASA ว่าง = Missing ASA", "PASS  ห้องนอก OR 1–16 จัดเข้าชั้น 4", "PASS  เวรดึก (ไม่มีคอลัมน์ date): เริ่ม 1 พ.ย. 08:29 = ต.ค. · 08:30 = พ.ย.", "PASS  ทุกแถวในไฟล์ ต.ค. นับเป็นเดือน ต.ค. (ตามคอลัมน์ date)", "PASS  เคส 1 พ.ย. 00:15 (แถว 1416) นับเป็น ต.ค.", "PASS  ในเวลา/นอกเวลา ไม่ขึ้นกับตัว E ของ ASA"], "pass": 26, "fail": 0, "at": "2026-11-18T17:46:37.525Z"}; S.testResults = EMBEDDED_TESTS;
+function resolveNames(){ S.audit.forEach((a) => { if (a.by) S.names[a.by] = a.by; }); }
+async function log(action, detail){ try { await S.db.collection('audit').add({at:new Date().toISOString(), by:S.myId, action, detail}); } catch {} }
+
+/* ---------- CSV ---------- */
+async function downloadCsv(){
+  const p = period(); const {M} = compute(p.fy, p.from, p.to);
+  const cols = ['F3','F4','F5','F6','INTIME','OUT','TOTAL'];
+  const rows = [['รายการ', ...cols.map((k) => LABEL[k])],
+    ['จำนวนเคส', ...cols.map((k) => M[k].cases)], ['Weighted Workload', ...cols.map((k) => M[k].ww.toFixed(2))],
+    ['Nursing Hours', ...cols.map((k) => M[k].nh)], ['Productivity %', ...cols.map((k) => M[k].prod==null?'':M[k].prod.toFixed(2))],
+    ['Workload Hours', ...cols.map((k) => M[k].wh.toFixed(2))], ['Workload Required FTE', ...cols.map((k) => M[k].req.toFixed(2))],
+    ['Actual FTE', ...cols.map((k) => M[k].act==null?'':M[k].act.toFixed(2))], ['FTE Gap', ...cols.map((k) => M[k].gap==null?'':M[k].gap.toFixed(2))]];
+  const csv = '﻿' + `ช่วงข้อมูล,${periodText(p)}\n` + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `Productivity_${p.fy}_${pad(p.to)}${S.mode==='ytd'?'_YTD':''}.csv`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+/* ---------- render & events ---------- */
+function render(){
+  const ready0 = Object.values(S.loaded).every(Boolean);
+  if (S.fy == null || (!S.periodSet && ready0)){ const d = defaultPeriod(); S.fy = d.fy; S.fidx = d.fidx; if (ready0) S.periodSet = true; }
+  renderControls();
+  const v = viewName();
+  document.querySelectorAll('#tabs a').forEach((a) => a.setAttribute('aria-current', a.getAttribute('href') === '#'+v ? 'page' : 'false'));
+  const focusId = document.activeElement && document.activeElement.id;
+  const ready = Object.values(S.loaded).every(Boolean);
+  if (S.gate){ $('#view').innerHTML = S.gate; bindGate(); return; }
+  if (!S.db && S.dbChecked){ $('#view').innerHTML = `<div class="panel empty"><h2>เชื่อมต่อฐานข้อมูลไม่ได้</h2><p class="note">เปิดหน้านี้จาก claude.ai โดยลงชื่อเข้าใช้ เพื่อดูข้อมูลของกลุ่มงาน</p></div>`; return; }
+  if (!ready){ $('#view').innerHTML = `<div class="panel empty">${S.stale ? 'ยังติดต่อฐานข้อมูลไม่ได้ กำลังลองใหม่…' : 'กำลังโหลดข้อมูลกลุ่มงาน…'}</div>`; return; }
+  const keep = {};
+  document.querySelectorAll('#view input[id], #view select[id]').forEach((el) => { if (el.type !== 'file' && el.value !== el.defaultValue) keep[el.id] = el.value; });
+  $('#view').innerHTML = VIEWS[v]();
+  bind(v);
+  Object.entries(keep).forEach(([id, val]) => { const el = document.getElementById(id); if (el && el.tagName === 'INPUT'){ el.value = val; el.dispatchEvent(new Event('input')); } });
+  if (focusId && document.getElementById(focusId)) document.getElementById(focusId).focus();
+}
+var bind = function(v){
+  const dl = $('#dlCsv'); if (dl) dl.onclick = downloadCsv;
+  if (v === 'upload'){
+    const f = $('#file'), d = $('#drop');
+    if (f){ f.onchange = () => f.files[0] && readFile(f.files[0]);
+      d.ondragover = (e) => { e.preventDefault(); d.classList.add('over'); }; d.ondragleave = () => d.classList.remove('over');
+      d.ondrop = (e) => { e.preventDefault(); d.classList.remove('over'); const x = e.dataTransfer.files[0]; if (x) readFile(x); }; }
+    const s = $('#saveUp'); if (s) s.onclick = saveUpload;
+    const c = $('#cancelUp'); if (c) c.onclick = () => { S.pending = null; render(); };
+    document.querySelectorAll('[data-askdel]').forEach((b) => b.onclick = () => { S.confirmDel = b.dataset.askdel; render(); });
+    document.querySelectorAll('[data-nodel]').forEach((b) => b.onclick = () => { S.confirmDel = null; render(); });
+    document.querySelectorAll('[data-del]').forEach((b) => b.onclick = () => deleteUpload(b.dataset.del));
+  }
+  if (v === 'hours'){
+    const hf = $('#hFy'); if (hf) hf.onchange = () => { S.hoursFy = +hf.value; render(); };
+    document.querySelectorAll('input.cell[data-k]').forEach((inp) => {
+      inp.oninput = () => { const d = S.nh[inp.dataset.k] || {}; inp.classList.toggle('dirty', String(d[inp.dataset.f] ?? '') !== inp.value.trim());
+        const btn = document.querySelector(`[data-savenh="${inp.dataset.k}"]`); if (btn) btn.disabled = !document.querySelector(`input.dirty[data-k="${inp.dataset.k}"]`); };
+      inp.onfocus = () => { nhTarget = inp.id; const t = $('#cTarget'); if (t) t.textContent = 'ช่องที่เลือก: ' + inp.getAttribute('aria-label'); };
+    });
+    document.querySelectorAll('[data-savenh]').forEach((b) => b.onclick = () => saveNh(b.dataset.savenh));
+    const calc = () => { const r = (+$('#cP').value||0) * (+$('#cD').value||0) * (+$('#cH').value||0); $('#cR').textContent = r ? fmt0(r) : '—'; return r; };
+    ['#cP','#cD','#cH'].forEach((id) => { const e = $(id); if (e) e.oninput = calc; });
+    const apply = (addMode) => { const r = calc(); const t = nhTarget && document.getElementById(nhTarget); if (!t){ toast('คลิกเลือกช่องในตารางก่อน'); return; }
+      t.value = String((addMode ? (+t.value||0) : 0) + r); t.dispatchEvent(new Event('input')); };
+    const ca = $('#cAdd'); if (ca){ ca.onclick = () => apply(true); $('#cSet').onclick = () => apply(false); }
+    if (nhTarget && $('#cTarget') && document.getElementById(nhTarget)) $('#cTarget').textContent = 'ช่องที่เลือก: ' + document.getElementById(nhTarget).getAttribute('aria-label');
+  }
+  if (v === 'asa'){ const c = $('#asaRaw'); if (c) c.onchange = () => { S.asaRaw = c.checked; render(); }; }
+  if (v === 'staffing'){ const b = $('#saveStaff'); if (b) b.onclick = saveStaffing; }
+  if (v === 'holidays'){
+    const fm = $('#holForm'); if (fm) fm.onsubmit = (e) => { e.preventDefault(); const date = $('#hDate').value, name = $('#hName').value.trim(); if (!date || !name) return;
+      const list = (S.config.holidays||[]).filter((h) => h.date !== date).concat([{date, name}]); saveConfig({holidays:list}, `เพิ่มวันหยุด ${date} ${name}`); };
+    document.querySelectorAll('[data-delhol]').forEach((b) => b.onclick = () => saveConfig({holidays:(S.config.holidays||[]).filter((h) => h.date !== b.dataset.delhol)}, `ลบวันหยุด ${b.dataset.delhol}`));
+  }
+  if (v === 'rules'){
+    const cf = $('#critForm'); if (cf) cf.onsubmit = (e) => { e.preventDefault(); const lo = +$('#cLow').value, hi = +$('#cHigh').value;
+      if (!(lo > 0 && hi > lo)){ toast('ค่าสูงสุดต้องมากกว่าค่าต่ำสุด'); return; } saveConfig({low:lo, high:hi}, `เกณฑ์ ${lo}–${hi}%`); };
+  }
+}
+
+/* ---------- members (admin) ---------- */
+function members(){
+  if (!S.isAdmin) return '<div class="panel empty">เฉพาะผู้ดูแลระบบ</div>';
+  const list = Object.entries(S.members).sort((a,b) => a[0] < b[0] ? -1 : 1);
+  const roleTh = {admin:'ผู้ดูแลระบบ', editor:'ผู้แก้ไข', viewer:'ผู้ดู'};
+  return `<section class="panel"><h2>ผู้ใช้งานที่มีสิทธิ์</h2>
+    <p class="sub">ใส่อีเมล Google (Gmail) ของบุคลากร · ผู้ดู = ดูผลอย่างเดียว · ผู้แก้ไข = นำเข้าไฟล์ / กรอก Nursing Hours / ตั้งค่า · ผู้ดูแลระบบ = ทำได้ทั้งหมดและเพิ่ม/ลบผู้ใช้</p>
+    <form class="actions" id="memForm" style="margin-bottom:12px"><input class="txt" id="mEmail" type="email" placeholder="name@gmail.com" required aria-label="อีเมล" style="min-width:240px">
+      <select class="txt" id="mRole" aria-label="สิทธิ์"><option value="viewer">ผู้ดู</option><option value="editor">ผู้แก้ไข</option><option value="admin">ผู้ดูแลระบบ</option></select>
+      <button class="btn primary">เพิ่มผู้ใช้</button></form>
+    <div class="tw"><table><thead><tr><th>อีเมล</th><th>สิทธิ์</th><th>เพิ่มเมื่อ</th><th></th></tr></thead><tbody>
+    ${list.map(([em, m]) => `<tr><td class="lbl">${esc(em)}${em === S.myId ? ' <span class="chip good">คุณ</span>' : ''}</td>
+      <td><select class="txt" data-role="${esc(em)}" ${em === S.myId ? 'disabled' : ''}>${['viewer','editor','admin'].map((r) => `<option value="${r}" ${m.role===r?'selected':''}>${roleTh[r]}</option>`).join('')}</select></td>
+      <td class="dim">${m.addedAt ? new Date(m.addedAt).toLocaleDateString('th-TH') : '—'}</td>
+      <td>${em === S.myId ? '' : (S.confirmMem === em ? `<span class="actions"><button class="btn danger" data-delmem="${esc(em)}">ยืนยันลบ</button><button class="btn" data-nodelmem>ไม่ลบ</button></span>` : `<button class="btn danger" data-askmem="${esc(em)}">ลบ</button>`)}</td></tr>`).join('')}
+    </tbody></table></div></section>`;
+}
+function bindMembers(){
+  const f = $('#memForm'); if (!f) return;
+  f.onsubmit = async (e) => { e.preventDefault(); const em = $('#mEmail').value.trim().toLowerCase(), role = $('#mRole').value;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ toast('อีเมลไม่ถูกต้อง'); return; }
+    try { await S.db.doc('members/' + em).set({role, addedAt: new Date().toISOString(), addedBy: S.myId}); await log('เพิ่มผู้ใช้', `${em} · ${role}`); $('#mEmail').value = ''; toast('เพิ่มผู้ใช้แล้ว'); } catch (err){ toast('เพิ่มไม่สำเร็จ: ' + (err.code || err.message)); } };
+  document.querySelectorAll('[data-role]').forEach((sel) => sel.onchange = async () => { const em = sel.dataset.role;
+    try { await S.db.doc('members/' + em).set({...S.members[em], role: sel.value}); await log('เปลี่ยนสิทธิ์', `${em} → ${sel.value}`); toast('บันทึกแล้ว'); } catch { toast('บันทึกไม่สำเร็จ'); } });
+  document.querySelectorAll('[data-askmem]').forEach((b) => b.onclick = () => { S.confirmMem = b.dataset.askmem; render(); });
+  document.querySelectorAll('[data-nodelmem]').forEach((b) => b.onclick = () => { S.confirmMem = null; render(); });
+  document.querySelectorAll('[data-delmem]').forEach((b) => b.onclick = async () => { const em = b.dataset.delmem;
+    try { await S.db.doc('members/' + em).delete(); await log('ลบผู้ใช้', em); S.confirmMem = null; toast('ลบแล้ว'); } catch { toast('ลบไม่สำเร็จ'); } });
+}
+
+/* ---------- sign-in gate ---------- */
+function gateHtml(kind, email){
+  if (kind === 'setup') return `<div class="panel empty gate"><h2>ยังไม่ได้ตั้งค่า Firebase</h2><p class="note">เปิดไฟล์ <b>firebase-config.js</b> ใน GitHub แล้ววางค่า firebaseConfig จาก Firebase Console ตามคู่มือขั้นที่ 3</p></div>`;
+  if (kind === 'login') return `<div class="panel empty gate"><h2>เข้าสู่ระบบ</h2><p class="note">ใช้บัญชี Google ที่ผู้ดูแลระบบเพิ่มสิทธิ์ให้แล้ว</p><button class="btn primary" id="btnLogin">เข้าสู่ระบบด้วย Google</button></div>`;
+  if (kind === 'denied') return `<div class="panel empty gate"><h2>บัญชีนี้ยังไม่มีสิทธิ์</h2><p class="note">ส่งอีเมลนี้ให้ผู้ดูแลระบบเพิ่มสิทธิ์ที่เมนู “ผู้ใช้งาน”</p><p><b class="num">${esc(email)}</b></p><button class="btn" id="btnLogout2">ออกจากระบบ / เปลี่ยนบัญชี</button></div>`;
+  return `<div class="panel empty gate"><h2>เชื่อมต่อไม่ได้</h2><p class="note">${esc(email || '')}</p></div>`;
+}
+function bindGate(){
+  const b = $('#btnLogin'); if (b) b.onclick = async () => { const p = new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({prompt:'select_account'});
+    try { await firebase.auth().signInWithPopup(p); } catch (e){ if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') firebase.auth().signInWithRedirect(p); else if (e.code !== 'auth/popup-closed-by-user') toast('เข้าสู่ระบบไม่สำเร็จ: ' + e.code); } };
+  const o = $('#btnLogout2'); if (o) o.onclick = () => firebase.auth().signOut();
+}
+function showGate(kind, email){ S.gate = gateHtml(kind, email); $('#who').hidden = kind !== 'denied'; render(); }
+
+/* ---------- boot (Firebase) ---------- */
+let unsubs = [];
+function stopSubs(){ unsubs.forEach((u) => u()); unsubs = []; }
+function startSubs(db){
+  S.loaded = {uploads:false, rows:false, nh:false, config:false}; S.periodSet = false;
+  const timer = setTimeout(() => { S.stale = true; render(); }, 10000);
+  const done = (k) => () => { S.loaded[k] = true; if (Object.values(S.loaded).every(Boolean)){ clearTimeout(timer); S.stale = false; } };
+  const err = (k) => (e) => { console.error(k, e); S.loaded[k] = true; if (e && e.code === 'permission-denied') toast('ไม่มีสิทธิ์อ่านข้อมูล'); render(); };
+  unsubs.push(db.collection('uploads').onSnapshot((s) => { S.uploads = {}; s.docs.forEach((d) => S.uploads[d.id] = d.data()); done('uploads')(); render(); }, err('uploads')));
+  unsubs.push(db.collection('rows').onSnapshot((s) => { S.rowsDocs = {}; s.docs.forEach((d) => S.rowsDocs[d.id] = d.data()); rebuildRows(); done('rows')(); render(); }, err('rows')));
+  unsubs.push(db.collection('nh').onSnapshot((s) => { S.nh = {}; s.docs.forEach((d) => S.nh[d.id] = d.data()); done('nh')(); render(); }, err('nh')));
+  unsubs.push(db.doc('settings/config').onSnapshot((d) => { if (d.exists) S.config = {...S.config, ...d.data()}; done('config')(); render(); }, err('config')));
+  unsubs.push(db.collection('audit').orderBy('at','desc').limit(30).onSnapshot((s) => { S.audit = s.docs.map((d) => d.data()); resolveNames(); render(); }, () => {}));
+  if (S.isAdmin) unsubs.push(db.collection('members').onSnapshot((s) => { S.members = {}; s.docs.forEach((d) => S.members[d.id] = d.data()); if (viewName() === 'members') render(); }, () => {}));
+}
+const _bind = bind;
+bind = function(v){ _bind(v); if (v === 'members') bindMembers(); };
+S.members = {};
+render();
+(() => {
+  const cfg = window.firebaseConfig;
+  if (!window.firebase || !cfg || !cfg.apiKey || String(cfg.apiKey).includes('วาง')){ showGate('setup'); return; }
+  firebase.initializeApp(cfg);
+  const db = firebase.firestore();
+  firebase.auth().getRedirectResult().catch(() => {});
+  firebase.auth().onAuthStateChanged(async (u) => {
+    stopSubs(); S.db = null; S.canEdit = false; S.isAdmin = false;
+    if (!u){ $('#who').hidden = true; $('#tabMembers').hidden = true; showGate('login'); return; }
+    const email = (u.email || '').toLowerCase(); S.myId = email;
+    $('#who').innerHTML = `<span>${esc(email)}</span><button class="btn small" id="btnLogout">ออกจากระบบ</button>`; $('#who').hidden = false;
+    $('#btnLogout').onclick = () => firebase.auth().signOut();
+    let role = null;
+    try { const m = await db.doc('members/' + email).get(); role = m.exists ? m.data().role : null; } catch (e){ role = null; }
+    if (!role){ showGate('denied', email); return; }
+    S.role = role; S.canEdit = role === 'admin' || role === 'editor'; S.isAdmin = role === 'admin';
+    $('#tabMembers').hidden = !S.isAdmin;
+    $('#who').innerHTML = `<span>${esc(email)} · ${{admin:'ผู้ดูแลระบบ', editor:'ผู้แก้ไข', viewer:'ผู้ดู'}[role]}</span><button class="btn small" id="btnLogout">ออกจากระบบ</button>`;
+    $('#btnLogout').onclick = () => firebase.auth().signOut();
+    S.gate = null; S.db = db; startSubs(db); render();
+  });
+})();
+})();
+</script>
+
+</body>
+</html>
