@@ -1,10 +1,9 @@
-// ขั้นที่ 3 ในคู่มือ: ลบค่าตัวอย่างด้านล่าง แล้ววาง firebaseConfig ที่คัดลอกจาก Firebase Console แทน
-// (ค่าชุดนี้ไม่ใช่รหัสลับ ใส่ใน GitHub แบบสาธารณะได้ ความปลอดภัยของข้อมูลมาจาก Firestore Rules)
+// ค่าการเชื่อมต่อ Firebase (ไม่ใช่รหัสลับ ความปลอดภัยของข้อมูลมาจาก Firestore Rules)
 window.firebaseConfig = {
-  apiKey: "วาง apiKey ที่นี่",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyBnDD9auaUG-oZBHgEhi00C3pJn7fLD4OY",
+  authDomain: "anes-productivity.firebaseapp.com",
+  projectId: "anes-productivity",
+  storageBucket: "anes-productivity.firebasestorage.app",
+  messagingSenderId: "230149497713",
+  appId: "1:230149497713:web:5fd1a55d34c83934cd4cd0"
 };
