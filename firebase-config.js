@@ -1,6 +1,6 @@
 // ค่าการเชื่อมต่อ Firebase (ไม่ใช่รหัสลับ ความปลอดภัยของข้อมูลมาจาก Firestore Rules)
 window.firebaseConfig = {
-  apiKey: "AIzaSyBnDD9auaUG-oZBHgEhi00C3pJn7fLD4OY",
+  apiKey: "AIzaSyBnDD9auaUG-oZBHgEhiO0C3pJn7fLD4OY",
   authDomain: "anes-productivity.firebaseapp.com",
   projectId: "anes-productivity",
   storageBucket: "anes-productivity.firebasestorage.app",
